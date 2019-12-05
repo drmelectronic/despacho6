@@ -173,7 +173,7 @@ class IFrame(gtk.ScrolledWindow): # Ubuntu
             self.add(self.browser)
             self.browser.open(url)
         except:
-            print 'error'
+            pass
 
     def mostrar(self, *args):
         m = re.search("GtkScrolledWindow at 0x(\w+)", str(self))
@@ -241,9 +241,10 @@ class Navegador(gtk.Window):
 
 
 if __name__ == '__main__':
-    init()
-    url = 'http://tracking.tcontur.com/despacho/login-mapa?usuario=None&password=None'
-    w = Window(url)
+    # init()
+    # url = 'http://tracking.tcontur.com/despacho/login-mapa?usuario=None&password=None'
+    # w = Window(url)
+
     #w = gtk.Window(gtk.WINDOW_TOPLEVEL)
     #if os.name == 'nt':
     #    www = Browser(url, 150, 150)
@@ -257,5 +258,10 @@ if __name__ == '__main__':
     #www.mostrar()
     #w.show_all()
     ##www.open('tracking.tcontur.com')
-    gtk.main()
+
+    # gtk.main()
+
     #close()
+    import webbrowser
+    webbrowser.get()
+    webbrowser.open('http://urbano.tcontur.com')

@@ -662,6 +662,7 @@ class _OpenUSB(usb.backend.IBackend):
         _check(_lib.openusb_intr_xfer(dev_handle, intf, ep, byref(request)))
         return buffer[:request.result.transferred_bytes]
 
+# TODO: implement isochronous
 #    @methodtrace(_logger)
 #    def iso_write(self, dev_handle, ep, intf, data, timeout):
 #       pass

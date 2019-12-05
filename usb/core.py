@@ -142,6 +142,7 @@ class _ResourceManager(object):
         self._alt_set[i.bInterfaceNumber] = alt
 
     def get_interface(self, device, intf):
+        # TODO: check the viability of issuing a GET_INTERFACE
         # request when we don't have a alternate setting cached
         if isinstance(intf, Interface):
             return intf

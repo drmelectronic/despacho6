@@ -412,6 +412,11 @@ class DownloadHandler:
         self.fp = open(self.downloadsDir+"/"+filename, "wb")
 
     def GetSafeFilename(self, filename):
+        # TODO:
+        # - remove any unsafe characters (".." or "/" or "\" and
+        #   others), the safest way is to have a regexp with a list
+        #   safe characters. The dots ".." is a special case that
+        #   needs to be treated separately.
         if os.path.exists(self.downloadsDir+"/"+filename):
             filename = self.GetUniqueFilename()[:4]+"_"+filename
             assert not os.path.exists(self.downloadsDir+"/"+filename), (
@@ -421,9 +426,13 @@ class DownloadHandler:
     def GetUniqueFilename(self):
         # The filename may be empty, in that case generate
         # an unique name.
+        # TODO:
+        # - guess the extension using the mimeType (but mimeType
+        #   may also be empty), "text/css" => ".css".
         return str(uuid.uuid4()).replace("-", "")[:16]
 
     def OnData(self, data):
+        # TODO: display progress in percentage or/and KiB/MiB.
         if self.alreadyDownloaded == 0:
             sys.stdout.write("Download progress: ")
         sys.stdout.write(".")

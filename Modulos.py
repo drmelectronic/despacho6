@@ -1,35 +1,54 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
+
 import Widgets
 import Impresion
+import Cobranza
+import CajaCentralizada
 import gtk
 import gobject
-import glob
 import os
-import threading
 import time
 import datetime
-import random
-import socket
 from operator import itemgetter
 import Chrome
 from decimal import Decimal, ROUND_UP, ROUND_DOWN
-import pango
 import json
 
-class Selector(gtk.HBox):
-    __gsignals__ = {'desactivar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
-     'activar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
-     'cambio-selector': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())}
+import models
+from DataLocal import DataLocal
+from Http import Http
 
-    def __init__(self, parent, toolbar):
+
+class Selector(gtk.HBox):
+    __gsignals__ = {
+        'desactivar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
+        'activar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
+        'cambio-selector': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
+        'forzar-actualizar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
+        'nueva-ventana': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
+        'modulo-cobranza': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
+        'buscar-boleto': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
+        'chrome-web': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
+    }
+
+    def __init__(self,):
         super(Selector, self).__init__(False, 2)
-        self.http = parent.http
+        self.http = Http()
+        self.dataLocal = self.http.dataLocal
         self.dia_ = self.ruta_ = self.lado_ = None
+
+        herramientas = [
+            ('Nueva Ventana (Ctrl + N)', 'salidas.png', self.nueva_ventana),
+            ('Módulo Cobranza (Ctrl + C)', 'dinero.png', self.modulo_cobranza),
+            ('Buscar Boleto (Ctrl + B)', 'buscar24.png', self.buscar_boleto),
+            ('Sistema Web (Ctrl + T)', 'chrome.png', self.chrome_web)
+        ]
+        self.toolbar = Widgets.Toolbar(herramientas)
         self.fecha = Widgets.Fecha()
         self.fecha.set_size_request(90, 30)
         hbox = gtk.HBox(False, 2)
-        self.pack_start(toolbar, False, False, 0)
+        self.pack_start(self.toolbar, False, False, 0)
         self.pack_start(hbox, True, True, 0)
         hbox.pack_start(self.fecha, True, True, 0)
         hbox = gtk.HBox(False, 2)
@@ -40,56 +59,69 @@ class Selector(gtk.HBox):
         hbox.pack_start(self.lado, True, True, 0)
         but_actualizar = Widgets.Button('actualizar.png', size=16, tooltip='Actualizar')
         hbox.pack_start(but_actualizar, False, False, 0)
-        but_actualizar.connect('clicked', parent.actualizar)
+        but_actualizar.connect('clicked', self.forzar_actualizar)
         self.lado.connect('changed', self.comparar)
         self.ruta.connect('changed', self.comparar)
         self.fecha.connect('changed', self.comparar)
         self.dia = self.fecha.get_date()
         self.lado.set_lista((('A', 0), ('B', 1)))
-        lista = self.http.datos['rutas']
-        self.ruta.set_lista(lista)
-        if self.http.datos['despacho'] is False:
-            lado = 1
-        else:
-            lado = 0
-        self.lado.set_id(lado)
 
     def comparar(self, *args):
         lado = self.lado.get_id()
         dia = self.fecha.get_date()
         ruta = self.ruta.get_id()
-        if self.http.datos['despacho'] == lado or self.dia != dia:
-            self.emit('desactivar')
-        else:
-            self.emit('activar')
-        if self.lado_ != lado or self.dia_ != dia or self.ruta_ != ruta:
+        if self.ruta_ is None or self.lado_ != lado or self.dia_ != dia or self.ruta_.id != ruta:
             self.lado_ = lado
             self.dia_ = dia
-            self.ruta_ = ruta
+            if ruta:
+                self.ruta_ = self.dataLocal.get_ruta(ruta)
             self.emit('cambio-selector')
 
-    def login(self):
-        lista = self.http.datos['rutas']
+    def update_data(self):
+        lista = []
+        for r in self.dataLocal.get_rutas():
+            lista.append([r.codigo, r.id])
         self.ruta.set_lista(lista)
-        if self.http.datos['despacho'] is False:
-            lado = 1
-        else:
-            lado = 0
-        self.lado.set_id(lado)
+        if self.http.usuario:
+            if self.http.usuario is True:
+                lado = 1
+            else:
+                lado = 0
+            self.lado.set_id(lado)
 
     def get_datos(self):
-        return (self.dia_, self.ruta_, self.lado_)
+        return self.dia_, self.ruta_, bool(self.lado_)
 
     def vertical(self):
         self.set_orientation(gtk.ORIENTATION_VERTICAL)
 
+    def forzar_actualizar(self, *args):
+        self.emit('forzar-actualizar')
+
+    def nueva_ventana(self, *args):
+        self.emit('nueva-ventana')
+
+    def modulo_cobranza(self, *args):
+        self.emit('modulo-cobranza')
+
+    def buscar_boleto(self, *args):
+        self.emit('buscar-boleto')
+
+    def chrome_web(self, *args):
+        self.emit('chrome-web')
+
 
 class Disponibles(gtk.ScrolledWindow):
-    __gsignals__ = {'salida-seleccionada': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT, gobject.TYPE_STRING))}
+    __gsignals__ = {
+        'unidad-seleccionada': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, )),
+        'unidad-excluida': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, )),
+    }
 
     def __init__(self, http):
         super(Disponibles, self).__init__()
         self.label = gtk.Label()
+        self.inicio = None
+        self.unidades = None
         self.w = self.get_parent_window()
         self.selector = self.dia = self.ruta = self.lado = None
         self.label.set_markup('<b>DISPONIBLES (0)</b>')
@@ -98,15 +130,8 @@ class Disponibles(gtk.ScrolledWindow):
             self.set_size_request(200, 500)
         else:
             self.set_size_request(320, 500)
-        self.model = gtk.ListStore(int, int, str, int, int, int, str, str, str, str, str)
-        columnas = ['N\xc2\xba',
-         'P',
-         'H.SAL',
-         'F',
-         'VR',
-         'VA',
-         'H.ING',
-         'TI']
+        self.model = gtk.ListStore(int, int, str, int, int, int, str, str, str, gobject.TYPE_PYOBJECT)
+        columnas = ['#', 'P', 'H.SAL', 'F', 'VR', 'VA', 'H.ING', 'TI']
         self.http = http
         self.treeview = Widgets.TreeView(self.model)
         self.treeview.set_enable_search(False)
@@ -126,31 +151,78 @@ class Disponibles(gtk.ScrolledWindow):
         self.treeview.set_reorderable(False)
         self.add(self.treeview)
 
+    def get_selected(self):
+        path, column = self.treeview.get_cursor()
+        path = int(path[0])
+        return self.get_modelo(path)
+
     def update_selector(self):
         self.dia, self.ruta, self.lado = self.selector.get_datos()
 
-    def get_primera_salida(self):
+    def get_primera_unidad(self):
         try:
-            salida = self.model[0][10]
-            padron = self.model[0][1]
-            return (salida, padron)
+            salida = self.model[0][len(self.model[0]) - 1]
+            return salida
         except:
-            return (False, False)
+            return None
+
+    def get_modelo(self, i):
+        return self.model[i][len(self.model[i]) - 1]
 
     def fila_seleccionada(self, *args):
-        path, column = self.treeview.get_cursor()
-        path = int(path[0])
-        salida = self.model[path][10]
-        padron = self.model[path][1]
-        print padron, salida
-        self.emit('salida-seleccionada', padron, salida)
+        unidad = self.get_selected()
+        print('DISPONIBLE', unidad)
+        self.emit('unidad-seleccionada', unidad)
 
-    def actualizar(self, lista):
+    def actualizar(self, unidades, inicio):
+        self.unidades = unidades
+        self.inicio = inicio
+        return self.escribir()
+
+    def escribir(self):
+        print('actualizar disponibles', self.inicio)
+        inicio = self.inicio
+        self.unidades.sort(key=lambda s: s.ingreso_espera)
+        self.unidades.sort(key=lambda s: s.record)
+        self.unidades.sort(key=lambda s: s.arreglada)
+        self.unidades.sort(key=lambda s: s.cola)
         self.model.clear()
-        for fila in lista:
+        orden = 0
+        for u in self.unidades:
+            orden += 1
+            if orden == 1:
+                u.inicio, u.frecuencia = self.ruta.getPrimeraHora(inicio, u.lado)
+                u.cola = False
+                u.arreglada = 0
+            else:
+                u.inicio, u.frecuencia = self.ruta.getSiguienteHora(inicio, u.lado)
+                u.cola = True
+            u.orden = orden
+            fila = u.get_fila_disponible()
             self.model.append(fila)
+            inicio = u.inicio
+        self.label.set_markup('<b>DISPONIBLES (%d)</b>' % len(self.unidades))
+        return inicio
 
-        self.label.set_markup('<b>DISPONIBLES (%d)</b>' % len(lista))
+    def append(self, unidad):
+        self.unidades.append(unidad)
+        self.escribir()
+
+    def excluir(self):
+        unidad = self.get_selected()
+        if unidad:
+            dialogo = Widgets.Alerta_Texto('Motivo de Exclusión', self.http.exclusiones)
+            string = dialogo.iniciar()
+            if string:
+                datos = {
+                    'unidad': unidad.id,
+                    'motivo': string
+                }
+                respuesta = self.http.load('excluir', datos)
+                if respuesta:
+                    unidad.estado = 'X'
+                    self.emit('unidad-excluida', unidad)
+            dialogo.cerrar()
 
 
 class Reordenar(gtk.Dialog):
@@ -253,12 +325,17 @@ class Reordenar(gtk.Dialog):
 
 
 class EnRuta(Widgets.Frame):
-    __gsignals__ = {'salida-seleccionada': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT, gobject.TYPE_STRING)),
-     'editar-llegadas': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
-     'excluir-vuelta': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT,)),
-     'ver-boletos': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
-     'llamar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (int, bool)),
-     'alerta-siguiente': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT,))}
+    __gsignals__ = {
+        'falla-mecanica': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, )),
+        'eliminar-salida': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, )),
+
+        'salida-seleccionada': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, )),
+        'editar-llegadas': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
+        'excluir-vuelta': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT,)),
+        'ver-boletos': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
+        'llamar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (int, bool)),
+        'alerta-siguiente': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT,))
+    }
 
     def __init__(self, padre):
         super(EnRuta, self).__init__()
@@ -272,6 +349,7 @@ class EnRuta(Widgets.Frame):
         self.sw = gtk.ScrolledWindow()
         self.indice = 0
         self.horas = []
+        self.salidas = []
         self.set_property('label-xalign', 0.2)
         vbox.pack_start(self.sw, True, True, 2)
         self.sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
@@ -279,8 +357,8 @@ class EnRuta(Widgets.Frame):
             self.sw.set_size_request(150, 300)
         else:
             self.sw.set_size_request(180, 300)
-        self.model = gtk.ListStore(int, int, str, int, str, str)
-        columnas = ['Nº', 'P', 'H.SAL', 'F']
+        self.model = gtk.ListStore(int, int, str, int, str, gobject.TYPE_PYOBJECT)
+        columnas = ['#', 'P', 'H.SAL', 'F']
         self.padre = padre
         self.http = padre.http
         self.treeview = Widgets.TreeView(self.model)
@@ -316,13 +394,10 @@ class EnRuta(Widgets.Frame):
         self.llamar.connect('clicked', self.llamar_clicked)
         self.http.reloj.connect('tic-tac', self.buscar)
         self.menu = gtk.Menu()
-        item1 = gtk.MenuItem('Anular Impresión')
-        item2 = gtk.MenuItem('Se Regresó')
+        item2 = gtk.MenuItem('Falla Mecánica')
         item3 = gtk.MenuItem('Eliminar Salida')
-        item1.connect('activate', self.anular)
         item2.connect('activate', self.regreso)
         item3.connect('activate', self.eliminar)
-        self.menu.append(item1)
         self.menu.append(item2)
         self.menu.append(item3)
         self.treeview.connect('button-release-event', self.on_release_button)
@@ -341,59 +416,25 @@ class EnRuta(Widgets.Frame):
                 self.menu.show_all()
             return True
 
-    def anular(self, *args):
-        path, column = self.treeview.get_cursor()
-        path = int(path[0])
-        salida = self.model[path][5]
-        padron = self.model[path][1]
-        pregunta = Widgets.Alerta_Texto(
-            'Motivo de ANULACION DE IMPRESION',
-            ('Error de Digitacion', 'Falta de Combustible', 'Conductor', 'Mantenimiento')
-        )
-        motivo = pregunta.iniciar()
-        pregunta.cerrar()
-        if motivo:
-            datos = {'salida_id': salida,
-                     'motivo': motivo,
-                     'dia': self.dia,
-                     'ruta_id': self.ruta,
-                     'lado': self.lado,
-                     'padron': padron
-                     }
-            tablas = self.http.load('anular-salida', datos)
-            if tablas:
-                self.padre.confirmar(self, tablas['tablas'])
-                self.padre.datos_unidad.escribir(None, tablas['unidad'])
-
     def regreso(self, *args):
-        path, column = self.treeview.get_cursor()
-        path = int(path[0])
-        salida = self.model[path][5]
-        padron = self.model[path][1]
+        salida = self.get_selected()
         pregunta = Widgets.Alerta_Texto(
-            'Motivo de REGRESO DE UNIDAD',
+            'Motivo de FALLA MECÁNICA',
             ('Error de Digitacion', 'Falta de Combustible', 'Conductor', 'Mantenimiento', 'Siniestro')
         )
         motivo = pregunta.iniciar()
         pregunta.cerrar()
         if motivo:
-            datos = {'salida_id': salida,
-                     'motivo': motivo,
-                     'dia': self.dia,
-                     'ruta_id': self.ruta,
-                     'lado': self.lado,
-                     'padron': padron
-                     }
-            tablas = self.http.load('regreso-salida', datos)
-            if tablas:
-                self.padre.confirmar(self, tablas['tablas'])
-                self.padre.datos_unidad.escribir(None, tablas['unidad'])
+            datos = {
+                'salida': salida.id,
+                'motivo': motivo,
+            }
+            respuesta = self.http.load('falla-mecanica', datos)
+            if respuesta:
+                self.emit('falla-mecanica', respuesta['salida'])
 
     def eliminar(self, *args):
-        path, column = self.treeview.get_cursor()
-        path = int(path[0])
-        salida = self.model[path][5]
-        padron = self.model[path][1]
+        salida = self.get_selected()
         pregunta = Widgets.Alerta_Texto(
             'Motivo de ELIMINAR SALIDA',
             ('Error de Digitacion',)
@@ -401,17 +442,13 @@ class EnRuta(Widgets.Frame):
         motivo = pregunta.iniciar()
         pregunta.cerrar()
         if motivo:
-            datos = {'salida_id': salida,
-                     'motivo': motivo,
-                     'dia': self.dia,
-                     'ruta_id': self.ruta,
-                     'lado': self.lado,
-                     'padron': padron
-                     }
-            tablas = self.http.load('eliminar-salida', datos)
-            if tablas:
-                self.padre.confirmar(self, tablas['tablas'])
-                self.padre.datos_unidad.escribir(None, tablas['unidad'])
+            datos = {
+                'salida': salida.id,
+                'motivo': motivo,
+            }
+            respuesta = self.http.load('eliminar-salida', datos)
+            if respuesta:
+                self.emit('eliminar-salida', respuesta)
 
     def update_selector(self):
         self.dia, self.ruta, self.lado = self.selector.get_datos()
@@ -419,18 +456,39 @@ class EnRuta(Widgets.Frame):
     def editar_llegada(self, *args):
         self.emit('editar-llegadas')
 
+    def get_modelo(self, i):
+        return self.model[i][len(self.model[i]) - 1]
+
+    def set_modelo(self, i, modelo):
+        self.model[i][len(self.model[i]) - 1] = modelo
+
+    def get_selected(self):
+        try:
+            path, column = self.treeview.get_cursor()
+            path = int(path[0])
+        except:
+            return None
+        return self.get_modelo(path)
+
     def fila_seleccionada(self, *args):
-        path, column = self.treeview.get_cursor()
-        path = int(path[0])
-        salida = self.model[path][5]
-        padron = self.model[path][1]
-        self.emit('salida-seleccionada', padron, salida)
+        salida = self.get_selected()
+        if not isinstance(salida, models.SalidaCompleta):
+            datos = {
+                'salida': salida.id
+            }
+            data = self.http.load('salida-completa', datos)
+            if data:
+                salida = models.SalidaCompleta(data['salida'])
+                path, column = self.treeview.get_cursor()
+                path = int(path[0])
+                self.set_modelo(path, salida)
+        self.emit('salida-seleccionada', salida)
 
     def buscar(self, *args):
         if self.indice is None:
             return
         l = len(self.model)
-        if self.indice != l:
+        if self.indice < l:
             t = datetime.datetime.now().replace(microsecond=0)
             hora = self.horas[self.indice]
             if t == hora:
@@ -438,18 +496,25 @@ class EnRuta(Widgets.Frame):
                 sig = self.llamar_clicked(None, False)
                 self.emit('alerta-siguiente', sig)
 
-    def actualizar(self, lista):
+    def actualizar(self, salidas):
         t = datetime.datetime.now()
+        self.salidas = salidas
         self.model.clear()
         self.horas = []
         self.indice = None
         buscar = True
         guardar = self.dia == datetime.date.today()
         i = 0
-        for fila in lista:
+        ultimo = None
+        for s in salidas:
+            if not isinstance(s, (models.Salida, models.SalidaCompleta)):
+                s = models.Salida(s)
+            if self.lado != s.lado:
+                continue
+            s.orden = i + 1
+            fila = s.get_fila_enruta()
             if guardar:
-                h, m = fila[2].split(':')
-                hora = datetime.datetime(self.dia.year, self.dia.month, self.dia.day, int(h), int(m))
+                hora = s.get_inicio()
                 self.horas.append(hora)
                 if buscar:
                     self.indice = i
@@ -457,10 +522,12 @@ class EnRuta(Widgets.Frame):
                     buscar = False
             self.model.append(fila)
             i += 1
+            ultimo = s
 
         if buscar:
             self.indice = i
-        self.label.set_markup('<b>EN RUTA (%d)</b>' % len(lista))
+        self.label.set_markup('<b>EN RUTA (%d)</b>' % len(salidas))
+        return ultimo
 
     def button_press_event(self, treeview, event):
         if event.button == 3:
@@ -473,7 +540,7 @@ class EnRuta(Widgets.Frame):
                 Widgets.Alerta('Error', 'falta_escoger.png', 'Escoja una salida para imprimir.')
                 return
             path = int(path[0])
-            salida = self.model[path][5]
+            salida = self.model[path][5].id
         except:
             return
 
@@ -497,10 +564,25 @@ class EnRuta(Widgets.Frame):
         adj = self.sw.get_vadjustment()
         adj.set_value(adj.upper - adj.page_size)
 
+    def get_ultima_fila(self):
+        l = len(self.model)
+        if l:
+            return self.model[l - 1]
+        return None
+
+    def get_ultima_hora(self):
+        l = len(self.model)
+        if l:
+            ultima = self.model[l - 1]
+            return ultima[5].getInicio()
+        return None
+
 
 class Excluidos(gtk.ScrolledWindow):
-    __gsignals__ = {'salida-seleccionada': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT, gobject.TYPE_STRING)),
-     'desexcluir': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT,))}
+    __gsignals__ = {
+        'excluido-seleccionado': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, )),
+        'desexcluir': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, ))
+    }
 
     def __init__(self, http):
         super(Excluidos, self).__init__()
@@ -513,11 +595,8 @@ class Excluidos(gtk.ScrolledWindow):
             self.set_size_request(200, 200)
         else:
             self.set_size_request(320, 200)
-        self.model = gtk.ListStore(int, int, str, str, int, str)
-        columnas = ['N\xc2\xba',
-         'P',
-         'H.SAL',
-         'H. CREACION']
+        self.model = gtk.ListStore(int, str, str, gobject.TYPE_PYOBJECT)
+        columnas = ['#', 'P', 'H.EXCLUSION']
         self.http = http
         self.treeview = Widgets.TreeView(self.model)
         self.treeview.connect('row-activated', self.desexcluir)
@@ -551,7 +630,8 @@ class Excluidos(gtk.ScrolledWindow):
         try:
             path, col, x, y = widget.get_path_at_pos(int(e.x), int(e.y))
             it = widget.get_model().get_iter(path)
-            value = 'HORAS DE EXCLUSION:\n' + widget.get_model().get_value(it, 5)
+            unidad = widget.get_model().get_value(it, 3)
+            value = 'MOTIVO DE EXCLUSION:\n' + unidad.observacion
             self.pop.show_all()
             a, x, y, b = self.display.get_pointer()
             self.pop.move(x + 10, y + 10)
@@ -563,40 +643,46 @@ class Excluidos(gtk.ScrolledWindow):
         try:
             path, column = self.treeview.get_cursor()
             path = int(path[0])
-            padron = self.model[path][1]
+            unidad = self.model[path][3]
         except:
             return
 
-        self.emit('desexcluir', padron)
+        self.emit('desexcluir', unidad)
 
     def fila_seleccionada(self, *args):
         try:
             path, column = self.treeview.get_cursor()
             path = int(path[0])
-            salida = self.model[path][4]
-            padron = self.model[path][1]
+            unidad = self.model[path][3]
         except:
             return
 
-        self.emit('salida-seleccionada', padron, salida)
+        self.emit('excluido-seleccionado', unidad)
 
-    def actualizar(self, lista):
+    def actualizar(self, unidades):
         self.model.clear()
-        for fila in lista:
+        orden = 0
+        for u in unidades:
+            orden += 1
+            u.orden = 1
+            fila = u.get_fila_excluidos()
             self.model.append(fila)
-        self.label.set_markup('<b>EXCLUIDOS (%d)</b>' % len(lista))
+        self.label.set_markup('<b>EXCLUIDOS (%d)</b>' % len(unidades))
 
 
 class Vueltas(Widgets.Frame):
-    __gsignals__ = {'salida-seleccionada': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT, gobject.TYPE_STRING)),
-     'editar-llegadas': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
-     'excluir-vuelta': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (str,)),
-     'ver-boletos': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())}
+    __gsignals__ = {
+        'salida-seleccionada': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT, )),
+        'editar-llegadas': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
+        'excluir-vuelta': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (str,)),
+        'ver-boletos': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+    }
 
-    def __init__(self, http):
+    def __init__(self):
         super(Vueltas, self).__init__()
         self.sw = gtk.ScrolledWindow()
         self.w = self.get_parent_window()
+        self.salidas = []
         self.selector = self.dia = self.ruta = self.lado = None
         self.add(self.sw)
         self.sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
@@ -606,17 +692,8 @@ class Vueltas(Widgets.Frame):
             self.sw.set_size_request(460, 170)
         self.set_property('shadow-type', gtk.SHADOW_NONE)
         self.model = gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, str, gobject.TYPE_PYOBJECT)
-        columnas = ['N\xc2\xba',
-         'L',
-         'RUTA',
-         'H.SAL',
-         'H.FIN',
-         'F',
-         'VOL',
-         'ESTADO',
-         'PROD',
-         'DIA']
-        self.http = http
+        columnas = ['#', 'PAD', 'L', 'RUTA', 'H.SAL', 'H.FIN', 'F', 'VOL', 'ESTADO', 'PROD', 'DIA']
+        self.http = Http()
         self.treeview = Widgets.TreeView(self.model)
         self.treeview.connect('row-activated', self.editar_llegadas)
         self.treeview.connect('cursor-changed', self.fila_seleccionada)
@@ -627,7 +704,7 @@ class Vueltas(Widgets.Frame):
             cell_text = gtk.CellRendererText()
             tvcolumn = Widgets.TreeViewColumn(columna)
             tvcolumn.pack_start(cell_text, True)
-            tvcolumn.set_attributes(cell_text, text=i, foreground=10)
+            tvcolumn.set_attributes(cell_text, text=i, foreground=11)
             self.treeview.append_column(tvcolumn)
             tvcolumn.encabezado()
 
@@ -636,23 +713,33 @@ class Vueltas(Widgets.Frame):
         self.entry_total = Widgets.Entry()
         self.entry_total.set_size_request(100, 25)
         self.entry_total.set_text('S/. 0.00')
+        self.entry_total.set_property('editable', False)
 
     def update_selector(self):
         self.dia, self.ruta, self.lado = self.selector.get_datos()
 
-    def guardar_salida(self, data):
-        salida = data['id']
+    def update_salida(self, salida):
         for i, fila in enumerate(self.model):
-            if fila[11] == salida:
-                self.model[i][12] = data
+            if self.get_modelo(i).id == salida.id:
+                salida.orden = self.get_modelo(i).orden
+                self.model[i] = salida.get_fila_vueltas()
 
-    def actualizar(self, lista):
+    def actualizar(self, salidas):
+        self.salidas = salidas
+        self.escribir()
+
+    def escribir(self):
         self.model.clear()
         total = Decimal('0.00')
-        for fila in lista:
+        dia = self.dia.strftime('%Y-%m-%d')
+        orden = 0
+        for s in self.salidas:
+            if dia == s.dia:
+                total += s.get_produccion()
+            orden += 1
+            s.orden = orden
+            fila = s.get_fila_vueltas()
             self.model.append(fila)
-            total += Decimal(fila[8])
-
         self.entry_total.set_text('S/. ' + str(total))
 
     def editar_llegadas(self, *args):
@@ -662,11 +749,11 @@ class Vueltas(Widgets.Frame):
         try:
             path, column = self.treeview.get_cursor()
             path = int(path[0])
-            salida = self.model[path][11]
+            salida = self.get_modelo(path)
         except:
             return
 
-        self.emit('salida-seleccionada', 0, salida)
+        self.emit('salida-seleccionada', salida)
 
     def button_press_event(self, treeview, event):
         if event.button == 3:
@@ -676,27 +763,28 @@ class Vueltas(Widgets.Frame):
         adj = self.sw.get_vadjustment()
         adj.set_value(adj.upper - adj.page_size)
 
+    def get_modelo(self, i):
+        return self.model[i][len(self.model[i]) - 1]
+
 
 class Datos(gtk.VBox):
     __gsignals__ = {
+        'agregar-espera': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
+        'unidad-modificada': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
+
         'vueltas': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
-        'confirmar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
         'hora-revisada': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
         'cambiar-a-llegadas': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
-        'actualizar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,))
+        'actualizar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
     }
 
     def __init__(self, salidas):
         super(Datos, self).__init__()
-        self.padron = 0
-        self.salida = 0
-        self._media_vuelta = False
-        self._vuelta_completa = False
-        self.combustible = ''
+        self.unidad = None
+        self.salida = None
         self.http = salidas.http
         self.ventana = salidas
         self.w = self.get_parent_window()
-        self.siguiente = None
         self.hora_minimo = datetime.datetime.now()
         self.selector = self.dia = self.ruta = self.lado = None
         vbox_main = gtk.VBox(False, 5)
@@ -721,7 +809,7 @@ class Datos(gtk.VBox):
         self.entry_padron.connect('activate', self.padron_activate)
 
         self.entry_padron.connect('key-release-event', self.padron_release)
-        self.but_celular = Widgets.Button('celular.png', size=16, tooltip='Llamar')
+        self.but_celular = Widgets.Button('sms.png', size=16, tooltip='Llamar')
         hbox_padron.pack_start(self.but_celular, False, False, 0)
         self.but_celular.connect('clicked', self.llamar_celular)
         label_hora = gtk.Label('H. Salida:')
@@ -746,60 +834,52 @@ class Datos(gtk.VBox):
                 label.set_size_request(80, 25)
             tabla.attach(label, 0, 2, i, i + 1, gtk.FILL, gtk.FILL, 2, 2)
 
-        self.button_placa = Widgets.ButtonDobleUnidad(self.http, self, tooltip='Estado de Unidad')
+        self.button_placa = Widgets.ButtonDobleUnidad(tooltip='Estado de Unidad')
         self.button_placa.set_size_request(25, 25)
         self.button_propietario = Widgets.ButtonDoble('no_castigado.png', 'castigado.png', 'Sin Poliza', tooltip='Estado de Propietario')
         self.button_propietario.set_size_request(25, 25)
-        self.button_conductor = Widgets.ButtonDoblePersonal(self.http, self, tooltip='Datos de Conductor')
+        self.button_conductor = Widgets.ButtonDoblePersonal(tooltip='Datos de Conductor')
         self.button_conductor.motivo = 'Conductor'
         self.button_conductor.set_size_request(25, 25)
-        self.button_cobrador = Widgets.ButtonDoblePersonal(self.http, self, tooltip='Datos de Cobrador')
+        self.button_cobrador = Widgets.ButtonDoblePersonal(tooltip='Datos de Cobrador')
         self.button_cobrador.motivo = 'Cobrador'
         self.button_cobrador.set_size_request(25, 25)
         self.button_stock = Widgets.ButtonDoble('no_castigado.png', 'castigado.png', '')
         self.botones = (self.button_padron,
-         self.button_placa,
-         self.button_propietario,
-         self.button_conductor,
-         self.button_cobrador)
+            self.button_placa,
+            self.button_propietario,
+            self.button_conductor,
+            self.button_cobrador)
         self.botones_b = (self.button_padron,
-         self.button_placa,
-         self.button_propietario,
-         self.button_conductor,
-         self.button_cobrador)
+            self.button_placa,
+            self.button_propietario,
+            self.button_conductor,
+            self.button_cobrador)
         tabla.attach(self.button_placa, 2, 3, 0, 1, gtk.FILL, gtk.FILL)
         tabla.attach(self.button_propietario, 2, 3, 1, 2, gtk.FILL, gtk.FILL)
         tabla.attach(self.button_conductor, 2, 3, 2, 3, gtk.FILL, gtk.FILL)
         tabla.attach(self.button_cobrador, 2, 3, 3, 4, gtk.FILL, gtk.FILL)
         self.label_placa = gtk.Label('-')
         self.label_propietario = gtk.Label('-')
-        self.combo_conductor = Widgets.ComboBox((str,
-         str,
-         int,
-         gobject.TYPE_PYOBJECT))
-        self.combo_conductor.column = 2
-        self.combo_cobrador = Widgets.ComboBox((str,
-         str,
-         int,
-         gobject.TYPE_PYOBJECT))
-        self.combo_cobrador.column = 2
+        self.label_conductor = gtk.Label('-')
+        self.label_cobrador = gtk.Label('-')
         if os.name == 'nt':
             self.label_placa.set_size_request(180, 25)
-            self.combo_conductor.set_size_request(180, 25)
-            self.combo_cobrador.set_size_request(180, 25)
+            self.label_conductor.set_size_request(180, 25)
+            self.label_cobrador.set_size_request(180, 25)
         else:
             self.label_placa.set_size_request(250, 25)
-            self.combo_conductor.set_size_request(250, 25)
-            self.combo_cobrador.set_size_request(250, 25)
+            self.label_conductor.set_size_request(250, 25)
+            self.label_cobrador.set_size_request(250, 25)
         tabla.attach(self.label_placa, 3, 4, 0, 1, gtk.EXPAND | gtk.FILL, gtk.EXPAND | gtk.FILL)
         tabla.attach(self.label_propietario, 3, 4, 1, 2, gtk.EXPAND | gtk.FILL, gtk.EXPAND | gtk.FILL)
         hbox = gtk.HBox(False, 0)
-        hbox.pack_start(self.combo_conductor, True, True, 0)
+        hbox.pack_start(self.label_conductor, True, True, 0)
         self.but_conductor_cobrador = Widgets.Button('abajo.png', size=16, tooltip='Ubicar como cobrador')
         self.but_conductor_cobrador.connect('clicked', self.downgrade_conductor)
         hbox.pack_start(self.but_conductor_cobrador, False, False, 0)
         tabla.attach(hbox, 3, 4, 2, 3, gtk.EXPAND | gtk.FILL, gtk.EXPAND | gtk.FILL)
-        tabla.attach(self.combo_cobrador, 3, 4, 3, 4, gtk.EXPAND | gtk.FILL, gtk.EXPAND | gtk.FILL)
+        tabla.attach(self.label_cobrador, 3, 4, 3, 4, gtk.EXPAND | gtk.FILL, gtk.EXPAND | gtk.FILL)
         imagen = 'buscar_personal.png'
         self.button_bloquear = Widgets.ButtonDobleBloquear('no_bloqueado.png', 'bloqueado.png', tooltip='Bloquear/Desbloquear')
         self.guardar_personal_but = Widgets.Button('guardar.png', size=16, tooltip='Guardar cambios de personal')
@@ -809,79 +889,53 @@ class Datos(gtk.VBox):
         tabla.attach(self.guardar_personal_but, 4, 5, 1, 2, gtk.SHRINK, gtk.SHRINK)
         tabla.attach(self.buscar_conductor, 4, 5, 2, 3, gtk.SHRINK, gtk.SHRINK)
         tabla.attach(self.buscar_cobrador, 4, 5, 3, 4, gtk.SHRINK, gtk.SHRINK)
+
         hbox_accion = gtk.HBox(False, 0)
         vbox_main.pack_start(hbox_accion, False, False, 0)
-        self.but_reserva = Widgets.Button(None, '<span foreground="#FF0000" weight="bold">R</span>', tooltip='Reservas y Suministros')
-        hbox_accion.pack_start(self.but_reserva, False, False, 0)
-        but_actualizar = Widgets.Button('actualizar.png', '', 16, tooltip='Actualizar Datos de la Unidad')
-        hbox_accion.pack_start(but_actualizar, False, False, 0)
-        but_actualizar.connect('clicked', self.padron_activate)
-        self.but_pagar = Widgets.Button('caja.png', '', tooltip='Cobrar a la unidad')
-        hbox_accion.pack_start(self.but_pagar, False, False, 0)
-        self.but_fondo_multiple = Widgets.Button('fondo_multiple.png', '', tooltip='Fondos Múltiples')
-        hbox_accion.pack_start(self.but_fondo_multiple, False, False, 0)
-        self.but_fondo = Widgets.Button('fondo.png', '', tooltip='Cobrar Fondos')
-        hbox_accion.pack_start(self.but_fondo, False, False, 0)
-        self.but_deudas = Widgets.Button('credito.png', '', tooltip='Cobrar Deudas')
-        hbox_accion.pack_start(self.but_deudas, False, False, 0)
-        self.but_reporte = Widgets.Button('cuenta.png', '', tooltip='Reporte de Caja')
-        hbox_accion.pack_start(self.but_reporte, False, False, 0)
-        self.but_stock_rojo = Widgets.Button('stock_rojo.png', '', tooltip='Suministrar Boletos (Obligatorio)')
-        hbox_accion.pack_start(self.but_stock_rojo, False, False, 0)
-        self.but_stock_verde = Widgets.Button('stock_verde.png', '', tooltip='Suministrar Boletos (Opcional)')
-        hbox_accion.pack_start(self.but_stock_verde, False, False, 0)
+
+        herramientas = [
+            ('Actualizar Datos de la Unidad', 'actualizar.png', self.padron_activate),
+            ('Reservas y Suministros', 'reserva.png', self.anular_reserva),
+        ]
+        toolbar = Widgets.Toolbar(herramientas)
+        self.but_stock_rojo = toolbar.add_button('Suministrar Boletos (Obligatorio)', 'stock_rojo.png', self.stock_clicked)
+        self.but_stock_verde = toolbar.add_button('Suministrar Boletos (Opcional)', 'stock_verde.png', self.stock_clicked)
+        hbox_accion.pack_start(toolbar, False, False, 0)
         self.info = gtk.Label()
         hbox_accion.pack_start(self.info, False, False, 0)
         self.but_confirmar = Widgets.Button('confirmar.png', '_Confirmar')
         hbox_accion.pack_end(self.but_confirmar, False, False, 0)
-        url = 'http://%s/despacho/ingresar/?sessionid=%s' % (self.http.dominio, salidas.principal.sessionid)
-        hpaned = gtk.HPaned()
-        vbox_main.pack_start(hpaned, True, True, 0)
-        if os.name == 'nt':
-            self.www = Chrome.Browser(url, 150, 100)
-        else:
-            self.www = Chrome.IFrame(url, 150, 100)
-        hpaned.pack1(self.www, True, True)
-        self.sw_chat = gtk.ScrolledWindow()
-        hpaned.pack2(self.sw_chat, False, False)
-        self.sw_chat.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.sw_chat.set_size_request(100, 100)
-        self.model_chat = gtk.ListStore(int, str, str)
-        self.chat = Widgets.TreeView(self.model_chat)
-        self.sw_chat.add(self.chat)
-        columnas = ['PAD', 'EVENTO']
-        self.chat.set_enable_search(False)
-        for i, columna in enumerate(columnas):
-            column = Widgets.TreeViewColumn(columna)
-            column.set_flags(gtk.CAN_FOCUS)
-            cell = gtk.CellRendererText()
-            cell.set_property('editable', False)
-            column.pack_start(cell, True)
-            column.set_attributes(cell, text=i, foreground=2)
-            self.chat.append_column(column)
-            column.encabezado()
 
-        self.chat.connect('row-activated', self.evento_seleccionado)
         self.activado = True
         self.padron_dia = None
-        self.llegadas = Llegadas(self.http, self)
-        self.boletaje = Boletos(self.http, self)
-        self.vueltas = Vueltas(self.http)
-        self.inspectoria = Inspectoria(self.http)
-        self.cortes = Cortes(self.http)
+        self.llegadas = Llegadas(self)
+        self.boletaje = Boletos(self)
+        self.vueltas = Vueltas()
+        self.inspectoria = Inspectoria()
+        self.cortes = Cortes()
         self.conectar()
 
-    def deudas(self, *args):
-        if self.padron:
-            data = self.http.load('deudas-unidad', {
-                'ruta_id': self.ruta,
-                'lado': self.lado,
-                'padron': self.padron
-            })
-            if isinstance(data, list):
-                dialogo = Deudas(self, data, self.padron, self.dia)
-                respuesta = dialogo.iniciar()
-                dialogo.cerrar()
+    def conectar(self):
+        self.llegadas.connect('finalizar-salida', self.finalizar_salida)
+        self.boletaje.connect('boletaje-guardado', self.boletaje_guardado)
+        self.boletaje.connect('boletaje-borrado', self.boletaje_borrado)
+        self.inspectoria.connect('actualizar', self.escribir)
+        self.button_bloquear.connect('clicked', self.bloquear)
+        self.buscar_conductor.connect('clicked', self.cambiar_personal, 'Conductor')
+        self.buscar_cobrador.connect('clicked', self.cambiar_personal, 'Cobrador')
+        self.guardar_personal_but.connect('clicked', self.guardar_personal)
+        self.frecuencia.connect('ok', self.frecuencia_cambiada)
+        self.hora.connect('cambio', self.cambiar_hora)
+        self.hora.connect('enter', self.hora_activate)
+        self.but_confirmar.connect('clicked', self.confirmar_clicked)
+        self.but_relojes.connect('clicked', self.vuelta_completa)
+        # self.but_reserva.connect('clicked', self.anular_reserva)
+        # self.but_pagar.connect('clicked', self.pagar)
+        # self.but_fondo_multiple.connect('clicked', self.fondo_multiple)
+        # self.but_fondo.connect('clicked', self.fondo)
+        # self.but_deudas.connect('clicked', self.deudas)
+        # self.but_reporte.connect('clicked', self.reporte)
+        self.js_count = 0
 
     def codigo_activate(self, *args):
         codigo = self.entry_codigo.get_text()
@@ -896,63 +950,32 @@ class Datos(gtk.VBox):
                 'tipo': 'unidad',
                 'codigo': self.entry_codigo.get_text()
             }
-            opciones = self.http.load('buscar-codigo', data)
-            if len(opciones) == 1:
-                self.entry_padron.set_text(str(opciones[0]['padron']))
-                self.entry_codigo.set_text(str(opciones[0]['placa']))
-                self.padron_activate()
-            elif len(opciones) == 0:
-                self.entry_padron.set_text('')
-            else:
-                self.menu_codigo = gtk.Menu()
-                for o in opciones:
-                    item = gtk.MenuItem('%s (%s)' % (o['padron'], o['placa']))
-                    self.menu_codigo.append(item)
-                    item.connect('activate', self.set_padron, str(o['padron']))
-                    self.menu_codigo.popup(None, None, None, event.button, event.time)
-                    self.menu.show_all()
-
-    def set_padron(self, widget, padron):
-        self.entry_padron.set_text(padron)
-        self.padron_activate()
+            respuesta = self.http.load('buscar-codigo', data)
+            if respuesta:
+                opciones = respuesta['opciones']
+                if len(opciones) == 1:
+                    self.entry_padron.set_text(str(opciones[0]['padron']))
+                    self.entry_codigo.set_text(str(opciones[0]['placa']))
+                    self.padron_activate()
+                elif len(opciones) == 0:
+                    self.entry_padron.set_text('')
+                else:
+                    self.menu_codigo = gtk.Menu()
+                    for o in opciones:
+                        item = gtk.MenuItem('%s (%s)' % (o['padron'], o['placa']))
+                        self.menu_codigo.append(item)
+                        item.connect('activate', self.set_padron, str(o['padron']))
+                        self.menu_codigo.popup(None, None, None, event.button, event.time)
+                        self.menu.show_all()
 
     def downgrade_conductor(self, *args):
         js = self.combo_conductor.get_item()
         nombre = 'CONDUCTOR: %s' % js[0]
         self.combo_cobrador.add_item([nombre, js[1], js[2]])
 
-    def insertar_chat(self, tipo, padron, mensaje):
-        mensaje += ' ' + datetime.datetime.now().strftime('%H:%M:%S')
-        if tipo == 0:
-            self.model_chat.append((padron, mensaje, '#0B0'))
-        elif tipo == 1:
-            self.model_chat.append((padron, mensaje, '#0B0'))
-            if self.ventana.check_sonido_gps.get_active():
-                self.http.sonido.normal()
-        elif tipo == 2:
-            self.model_chat.append((padron, mensaje, '#00B'))
-            if self.ventana.check_sonido_gps.get_active():
-                self.http.sonido.importante()
-        else:
-            self.model_chat.append((padron, mensaje, '#B00'))
-            if self.ventana.check_sonido_gps.get_active():
-                self.http.sonido.emergencia()
-        adj = self.sw_chat.get_vadjustment()
-        adj.set_value(adj.upper - adj.page_size)
-
     def llamar_celular(self, *args):
         txt = self.entry_padron.get()
         Trackers(self.http, self.dia, self.ruta, self.lado, txt)
-
-    def evento_seleccionado(self, *args):
-        try:
-            path, column = self.chat.get_cursor()
-            path = int(path[0])
-            padron = self.model_chat[path][0]
-        except:
-            return
-
-        self.www.execute_script('update(%d);' % padron)
 
     def bloquear(self, *args):
         datos = {'padron': self.padron,
@@ -972,39 +995,6 @@ class Datos(gtk.VBox):
         self.dia, self.ruta, self.lado = self.selector.get_datos()
         print 'actualizar dia', self.dia
         self.hora.set_date(self.dia)
-        self.www.execute_script("setTimeout('set_ruta(%d)', 5000);" % self.ruta)
-
-    def login(self, sessionid):
-        url = 'http://%s/despacho/ingresar/?sessionid=%s&ruta=%d' % (self.http.appengine, sessionid, self.ruta)
-        self.www.open(url)
-        self.www.url = url
-        self.logueado = True
-
-    def conectar(self):
-        self.llegadas.connect('actualizar', self.escribir)
-        self.boletaje.connect('actualizar', self.escribir)
-        self.inspectoria.connect('actualizar', self.escribir)
-        self.button_bloquear.connect('clicked', self.bloquear)
-        self.buscar_conductor.connect('clicked', self.cambiar_personal, 'Conductor')
-        self.buscar_cobrador.connect('clicked', self.cambiar_personal, 'Cobrador')
-        self.combo_conductor.connect('changed', self.personal_cambio, 'Conductor')
-        self.combo_cobrador.connect('changed', self.personal_cambio, 'Cobrador')
-        self.guardar_personal_but.connect('clicked', self.guardar_personal)
-        self.frecuencia.connect('ok', self.frecuencia_cambiada)
-        self.hora.connect('cambio', self.cambiar_hora)
-        self.but_stock_rojo.connect('clicked', self.stock_clicked)
-        self.but_stock_verde.connect('clicked', self.stock_clicked)
-        self.hora.connect('enter', self.hora_activate)
-        self.but_reserva.connect('clicked', self.anular_reserva)
-        self.but_confirmar.connect('clicked', self.confirmar_clicked)
-        self.but_relojes.connect('clicked', self.vuelta_completa)
-        self.but_pagar.connect('clicked', self.pagar)
-        self.but_fondo_multiple.connect('clicked', self.fondo_multiple)
-        self.but_fondo.connect('clicked', self.fondo)
-        self.but_deudas.connect('clicked', self.deudas)
-        self.but_reporte.connect('clicked', self.reporte)
-        self.js_count = 0
-        self.logueado = False
 
     def desactivar(self):
         self.activado = False
@@ -1022,28 +1012,18 @@ class Datos(gtk.VBox):
             self.confirmar_clicked()
 
     def confirmar_clicked(self, *args):
-        padron = int(self.entry_padron.get_text())
-        conductor = self.combo_conductor.get_id()
-        cobrador = self.combo_cobrador.get_id()
-        hora = self.hora.get_time()
-        print hora
         try:
             frecuencia = self.frecuencia.get_int()
         except ValueError:
             Widgets.Alerta('Error', 'error_numero.png', 'El campo FRECUENCIA est\xc3\xa1 vac\xc3\xado.')
             return
         automatica = self.frecuencia.frec
-        datos = {'padron': padron,
-         'dia': self.dia,
-         'ruta_id': self.ruta,
-         'lado': self.lado,
-         'hora': str(self.hora.get_time()),
-         'frecuencia': frecuencia,
-         'automatica': automatica,
-         'conductor_id': conductor,
-         'cobrador_id': cobrador,
-         'empresa_id': self.http.empresa,
-         'atrasada': 0}
+        datos = {
+            'unidad': self.unidad.id,
+            'dia': self.dia,
+            'ruta': self.ruta.id,
+            'lado': int(self.lado)
+        }
         hora = datetime.datetime.strptime(str(self.dia) + ' ' + str(self.hora.get_time()), '%Y-%m-%d %H:%M:%S')
         print 'atrasada?', hora, self.ultima_hora - datetime.timedelta(0, self.frec * 60)
         if hora < self.ultima_hora - datetime.timedelta(0, self.frec * 60):
@@ -1053,10 +1033,18 @@ class Datos(gtk.VBox):
                 return
             datos['atrasada'] = 1
             dialogo.cerrar()
-        tablas = self.http.load('confirmar', datos)
-        if tablas:
-            self.emit('confirmar', tablas['tablas'])
-            self.escribir(None, tablas['unidad'])
+        data = self.http.load('poner-en-espera', datos)
+        if data:
+            unidad = data['unidad']
+            self.unidad.estado = unidad['estado']
+            self.unidad.record = unidad['record']
+            self.unidad.prioridad = unidad['prioridad']
+            self.unidad.arreglada = unidad['arreglada']
+            self.unidad.ingreso_espera = unidad['ingreso_espera']
+            self.unidad.lado = unidad['lado']
+            self.unidad.ruta = unidad['ruta']
+            self.escribir_datos_unidad()
+            self.emit('agregar-espera', self.unidad)
 
     def reporte(self, *args):
         dialogo = MiCaja(self.http, self)
@@ -1097,25 +1085,7 @@ class Datos(gtk.VBox):
 
         self.entry_padron.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse(color))
 
-    def padron_activate(self, *args):
-        self._vuelta_completa = False
-        self._media_vuelta = False
-        for boton in self.botones:
-            boton.set(True)
-        txt = self.entry_padron.get_text()
-        if txt == '':
-            return
-        try:
-            self.padron = int(txt)
-        except:
-            print txt
-            Widgets.Alerta('Error', 'error_numero.png', 'Escriba un n\xc3\xbamero de padron. S\xc3\xb3lo n\xc3\xbameros.')
-            self.entry_padron.set_text('')
-            self.padron = None
-            self.activado = False
-            return
-        self.entry_padron.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FFFFFF'))
-        self.www.execute_script('update(%d);' % self.padron)
+    def cargar_unidad(self):
         self.js_count = 0
         datos = {
             'padron': self.padron,
@@ -1123,188 +1093,252 @@ class Datos(gtk.VBox):
             'ruta_id': self.ruta,
             'lado': self.lado
         }
-        self.datos = self.http.load('solo-unidad', datos)
-        self.padron_dia = self.dia
-        self.salida = None
-        self.escribir_datos_unidad()
-        if self.datos['salida_tablas'] is not None:
-            self.vueltas.guardar_salida(self.datos['salida_tablas'])
-        self.escribir_datos_salida()
-        self.hora.set_sensitive(True)
-        self.but_relojes.set_sensitive(False)
-        if 'estado' in self.datos:
-            if self.datos['estado'] == 'R':
-                self._media_vuelta = True
-                if self.datos['lado'] == self.lado:
-                    self.hora.set_sensitive(False)
-                    self.but_relojes.set_sensitive(True)
-                    self.but_relojes.grab_focus()
-                    if self.http.datos['despacho'] is None:
-                        self._vuelta_completa = True
-                else:
-                    self.emit('cambiar-a-llegadas')
+        respuesta = self.http.load('unidad-vueltas', datos)
+        if respuesta:
+            self.unidad = models.Unidad(respuesta['unidad'])
+            self.unidad.set_suministros(respuesta['suministros'])
+            self.salidas = []
+            self.salida = None
+            for s in respuesta['salidas']:
+                salida = models.SalidaCompleta(s)
+                self.salidas.append(salida)
+                if self.unidad.actual == salida.id:
+                    self.salida = salida
+            self.padron_dia = self.dia
+            self.escribir_datos_unidad()
+
+    def padron_activate(self, *args):
+        self._vuelta_completa = False
+        self._media_vuelta = False
+        for boton in self.botones:
+            boton.set(None)
+        txt = self.entry_padron.get_text()
+        if txt == '':
+            return
+        try:
+            self.padron = int(txt)
+        except:
+            print txt
+            Widgets.Alerta('Error', 'error_numero.png', 'Escriba un número de padron. Sólo números.')
+            self.entry_padron.set_text('')
+            self.padron = None
+            self.activado = False
+            return
+        self.entry_padron.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FFFFFF'))
+        self.cargar_unidad()
+        self.set_salida_id(self.unidad.actual)
+
+    def set_padron(self, widget, padron):
+        self.entry_padron.set_text(str(padron))
+        self.padron = padron
+        self.cargar_unidad()
 
     def vuelta_completa(self, *args):
         self._vuelta_completa = True
         self.emit('cambiar-a-llegadas')
 
-    def unidad_salida(self, padron, salida):
-        for boton in self.botones:
-            boton.set(True)
+    def finalizar_salida(self, widget, data):
+        unidad = data['unidad']
+        self.unidad.estado = unidad['estado']
+        self.unidad.record = unidad['record']
+        self.unidad.prioridad = unidad['prioridad']
+        self.unidad.arreglada = unidad['arreglada']
+        self.unidad.ingreso_espera = unidad['ingreso_espera']
+        self.unidad.lado = unidad['lado']
+        self.unidad.ruta = unidad['ruta']
+        self.unidad.cola = unidad['cola']
 
-        self.entry_padron.set_text(str(padron))
-        self.padron = padron
-        self.salida = salida
-        self.www.execute_script('update(%d);' % self.padron)
-        self.js_count = 0
-        datos = {'salida_id': salida,
-         'padron': padron,
-         'dia': str(self.dia),
-         'ruta_id': self.ruta,
-         'lado': self.lado}
-        data = self.http.load('unidad-salida', datos)
-        if data:
-            self.padron_dia = self.dia
-            self.datos = data['unidad']
-            self.entry_codigo.set_text(data['unidad']['placa'])
-            self.escribir_datos_unidad()
-            self.salida = data['salida']['id']
-            self.vueltas.guardar_salida(data['salida'])
-            self.escribir_datos_salida()
+        self.escribir_datos_unidad()
+        self.salida = models.SalidaCompleta(data['salida'])
+        self.escribir_datos_salida()
+        self.emit('agregar-espera', self.unidad)
+
+    def boletaje_guardado(self, widget, data):
+        self.unidad = models.Unidad(data['unidad'])
+        self.unidad.set_suministros(data['suministros'])
+
+        self.escribir_datos_unidad()
+        self.salida = models.SalidaCompleta(data['salida'])
+        self.escribir_datos_salida()
+        self.emit('unidad-modificada', self.unidad)
+        self.vueltas.update_salida(self.salida)
+
+    def boletaje_borrado(self, widget, data):
+        self.unidad = models.Unidad(data['unidad'])
+        self.unidad.set_suministros(data['suministros'])
+
+        self.escribir_datos_unidad()
+        self.salida = models.SalidaCompleta(data['salida'])
+        self.escribir_datos_salida()
+        self.emit('unidad-modificada', self.unidad)
+        self.vueltas.update_salida(self.salida)
 
     def escribir(self, widget, data):
         if data:
-            self.datos = data
-            self.escribir_datos_unidad()
-            self.salida = self.datos['salida']
-            self.escribir_datos_salida()
+            if 'unidad' in data:
+                self.unidad = models.Unidad(data['unidad'])
+                self.escribir_datos_unidad()
+            if 'salida' in data:
+                salida = models.SalidaCompleta(data['salida'])
+                if self.salida.id == self.unidad.actual:
+                    self.salida = salida
+                self.escribir_datos_salida()
 
     def revisar_disponible(self):
-        confirmable = True
-        texto = ''
-        if self.lado:
-            botones = self.botones_b
-        else:
-            botones = self.botones
-        for boton in botones:
-            if boton.ok:
-                confirmable = False
-                texto += ' ' + boton.motivo
+        if self.dia == datetime.date.today():
+            confirmable = True
+            texto = ''
+            if self.lado:
+                botones = self.botones_b
+            else:
+                botones = self.botones
+            for boton in botones:
+                if boton.ok:
+                    confirmable = False
+                    texto += ' ' + boton.motivo
 
-        if len(texto) > 25:
-            texto = texto[:25] + '...'
-        self.info.set_text(texto)
-        self.but_confirmar.set_sensitive(confirmable)
+            if len(texto) > 25:
+                texto = texto[:25] + '...'
+            self.info.set_text(texto)
+            self.but_confirmar.set_sensitive(confirmable)
+        else:
+            self.but_confirmar.set_sensitive(False)
 
     def escribir_datos_unidad(self):
-        self.combo_conductor.set_lista(self.datos['conductores'])
-        self.combo_cobrador.set_lista(self.datos['cobradores'])
-        self.entry_codigo.set_text(self.datos['placa'])
-        print self.datos['unidad_check']
-        self.button_placa.set(self.datos['unidad_check'][0], self.datos['id'])
-        self.label_placa.set_markup(self.datos['modelo'])
+        self.label_propietario.set_markup('-')
+        self.label_placa.set_markup('-')
+        self.label_conductor.set_markup('-')
+        self.label_cobrador.set_markup('-')
+        self.button_conductor.set(None)
+        self.button_cobrador.set(None)
         self.button_propietario.set(False, '')
-        self.label_propietario.set_markup(self.datos['propietario'])
-        self.hora_minimo = datetime.datetime.strptime(self.datos['hora_check'], '%Y-%m-%d %H:%M:%S')
+
+        print('datos unidad', self.unidad)
+        self.entry_codigo.set_text(self.unidad.placa)
+        self.button_placa.set(self.unidad)
+        self.label_placa.set_markup(self.unidad.get_modelo())
+
+        propietario = self.unidad.get_propietario()
+        if propietario:
+            self.label_propietario.set_markup(propietario.nombre)
+
+        conductor = self.unidad.get_conductor()
+        if conductor:
+            self.label_conductor.set_markup(conductor.nombre)
+            self.button_conductor.set(conductor)
+        else:
+            self.label_conductor.set_markup('CONDUCTOR TEMPORAL')
+
+        cobrador = self.unidad.get_cobrador()
+        if cobrador:
+            self.label_cobrador.set_markup(cobrador.nombre)
+            self.button_cobrador.set(cobrador)
+        else:
+            self.label_cobrador.set_markup('COBRADOR TEMPORAL')
+
+        self.hora_minimo = datetime.datetime(2000, 1, 1)
         self.revisar_hora()
-        self.vueltas.actualizar(self.datos['salidas'])
-        self.salida = self.datos['salida']
+        self.vueltas.actualizar(self.salidas)
+        self.salida = self.unidad.actual
         self.hora.grab_focus()
-        self.bloqueado = self.datos['bloqueado']
+        self.bloqueado = bool(self.unidad.bloqueo)
         self.button_bloquear.set(self.bloqueado)
-        if self.datos['faltan']:
-            self.but_stock_rojo.show_all()
-            self.but_stock_verde.hide_all()
-            self.button_stock.set(True)
-        elif self.datos['faltan'] is None:
-            self.but_stock_rojo.hide_all()
-            self.but_stock_verde.show_all()
-            self.button_stock.set(False)
+
+        self.revisar_stock()
+
+        self.revisar_disponible()
+
+        self.hora.set_sensitive(True)
+        self.but_relojes.set_sensitive(False)
+        if self.unidad.estado == 'R':
+            self._media_vuelta = True
+            if self.unidad.lado == self.lado:
+                self.hora.set_sensitive(False)
+                self.but_relojes.set_sensitive(True)
+                self.but_relojes.grab_focus()
+                if self.http.usuario.lado is None:
+                    self._vuelta_completa = True
+            else:
+                self.emit('cambiar-a-llegadas')
+
+    def revisar_stock(self):
+        faltan = self.unidad.get_falta_stock()
+        if faltan:
+            obligatorio = False
+            for f in faltan:
+                if f['obligatorio']:
+                    obligatorio = True
+            if obligatorio:
+                self.but_stock_rojo.show_all()
+                self.but_stock_verde.hide_all()
+                self.button_stock.set(True)
+            else:
+                self.but_stock_rojo.hide_all()
+                self.but_stock_verde.show_all()
+                self.button_stock.set(False)
         else:
             self.but_stock_rojo.hide_all()
+            self.but_stock_rojo.hide_all()
             self.but_stock_verde.hide_all()
             self.button_stock.set(False)
-            self.revisar_disponible()
-            return
-        self.revisar_disponible()
-        vacio = {'tabla': [],
-         'padron': self.padron,
-         'id': self.salida,
-         'dia': '--/--/----',
-         'hora': '--:--'}
-        self.llegadas.actualizar(vacio)
-        self.boletaje.actualizar(vacio)
-        self.inspectoria.actualizar(vacio)
-        conductor = None
-        cobrador = None
+
+    def set_salida(self, salida):
+        self.salida = salida
+        self.escribir_datos_salida()
+
+    def set_salida_id(self, salida_id):
+        self.salida = None
+        for s in self.salidas:
+            if s.id == salida_id:
+                self.salida = s
+                break
+        if self.salida is None or not isinstance(self.salida, models.SalidaCompleta):
+            if salida_id:
+                datos = {
+                    'salida': salida_id
+                }
+                data = self.http.load('salida-completa', datos)
+                if data:
+                    self.salida = models.SalidaCompleta(data['salida'])
+        self.escribir_datos_salida()
 
     def escribir_datos_salida(self):
+        self.boletaje.set_salida(self.salida, self.unidad)
         if self.salida is None:
             return
-        no_esta = True
-        fila = None
-        for i, row in enumerate(self.vueltas.model):
-            if int(row[11]) == self.salida:
-                no_esta = False
-                fila = i
-                break
-
-        if no_esta:
-            datos = {'salida_id': self.salida,
-             'dia': self.dia,
-             'ruta_id': self.ruta,
-             'lado': self.lado,
-             'padron': self.padron}
-            data = self.http.load('datos-salida', datos)
-            if data:
-                self.vueltas.guardar_salida(data)
-            salida = data
-        else:
-            salida = self.vueltas.model[fila][12]
-            if salida is None:
-                datos = {'salida_id': self.salida,
-                 'dia': self.dia,
-                 'ruta_id': self.ruta,
-                 'lado': self.lado,
-                 'padron': self.padron}
-                data = self.http.load('datos-salida', datos)
-                if data:
-                    self.vueltas.guardar_salida(data)
-                salida = data
-        if salida:
-            self.vueltas.guardar_salida(salida)
-            self.llegadas.actualizar(salida['tablas']['llegadas'])
-            self.boletaje.actualizar(salida['tablas']['boletaje'])
-            self.inspectoria.actualizar(salida['tablas']['inspectorias'])
-            self.combo_conductor.add_item(salida['conductor'])
-            self.combo_cobrador.add_item(salida['cobrador'])
+        self.llegadas.set_salida(self.salida)
+        self.inspectoria.set_salida(self.salida)
+        # self.combo_conductor.add_item(salida['conductor'])
+        # self.combo_cobrador.add_item(salida['cobrador'])
 
     def cambiar_personal(self, widget, tipo):
-        datos = {'tipo': tipo,
-         'empresa_id': self.http.empresa}
+        datos = {'tipo': tipo, 'empresa_id': self.http.empresa}
+        lista = []
         if tipo == 'Conductor':
-            lista = self.http.conductores
-            if lista == []:
-                lista = self.http.load('personal', datos)
-                if lista:
-                    self.http.conductores = lista
+            for t in self.http.get_trabajadores():
+                if t.conductor:
+                    lista.append(t)
         else:
-            lista = self.http.cobradores
-            if lista == []:
-                lista = self.http.load('personal', datos)
-                if lista:
-                    self.http.cobradores = lista
+            for t in self.http.get_trabajadores():
+                if not t.conductor:
+                    lista.append(t)
         if lista:
-            dialogo = Personal(tipo, lista, self.http)
-            js = dialogo.iniciar()
+            dialogo = Personal(tipo, lista, self.http, self.unidad.puede_cambiar_personal())
+            trabajador = dialogo.iniciar()
             dialogo.cerrar()
-            if js:
+            if trabajador:
                 if tipo == 'Conductor':
-                    self.combo_conductor.add_item(js)
-                    self.button_conductor.set(js[3], js[2])
+                    self.label_conductor.set_markup(trabajador.get_nombre_codigo())
+                    self.button_conductor.set(trabajador)
                 elif tipo == 'Cobrador':
-                    self.combo_cobrador.add_item(js)
-                    self.button_cobrador.set(js[3], js[2])
+                    self.label_cobrador.set_markup(trabajador.get_nombre_codigo())
+                    self.button_cobrador.set(trabajador)
+                datos = {
+                    'trabajador': trabajador.id,
+                    'unidad': self.unidad.id,
+                    'tipo': tipo
+                }
+                self.http.load('cambiar-personal', datos)
 
     def personal_cambio(self, widget, tipo):
         if tipo == 'Conductor':
@@ -1338,14 +1372,21 @@ class Datos(gtk.VBox):
         self.frecuencia.set_text(str(int(frecuencia.total_seconds() / 60) + self.frec))
         self.revisar_hora()
 
-    def stock_clicked(self, widget=None):
-        datos = {'ruta_id': self.ruta,
-         'padron': self.padron}
-        boletos = self.http.load('boletos-faltan', datos)
-        if boletos:
-            dialog = Stock(self.padron, self.selector, self.http, boletos)
-            if dialog.iniciar():
-                self.escribir(None, dialog.respuesta)
+    def stock_clicked(self, *args):
+        self.dialogo_stock(self.unidad)
+
+    def dialogo_stock(self, unidad):
+        if self.unidad and self.unidad.id == unidad.id:
+            dialog = Stock(self.http, self.unidad)
+            entregado = dialog.iniciar()
+            dialog.cerrar()
+            if entregado:
+                self.revisar_stock()
+                self.boletaje.actualizar()
+            return True
+        else:
+            dialog = Stock(self.http, unidad)
+            entregado = dialog.iniciar()
             dialog.cerrar()
 
     def frecuencia_cambiada(self, *args):
@@ -1365,30 +1406,35 @@ class Datos(gtk.VBox):
         self.emit('hora-revisada')
 
     def set_siguiente(self, hora, frec, manual):
-        self.ultima_hora = datetime.datetime.strptime(hora, '%Y-%m-%d %H:%M:%S')
-        self.frec = int(frec)
-        self.frecuencia.set_frec(self.frec, manual)
+        self.ultima_hora = hora
         self.hora.set_datetime(self.ultima_hora)
+        self.frecuencia.set_auto(frec)
+        if manual['frecuencia'] is None:
+            self.frec = frec
+        else:
+            self.frec = manual['frecuencia']
+            self.frecuencia.set_manual(self.frec)
         self.revisar_hora()
 
     def anular_reserva(self, *args):
-        datos = {'ruta_id': self.ruta,
-         'padron': self.padron}
-        reservas = self.http.load('reserva-stock', datos)
-        if reservas:
-            dialog = ReservaStock(self.padron, self.selector, self.http, reservas)
+        if self.unidad:
+            dialog = ReservaStock(self.http, self.unidad)
             if dialog.iniciar():
-                self.escribir(None, dialog.respuesta)
+                self.escribir_datos_unidad()
             dialog.cerrar()
+
+    def focus_entry(self):
+        self.entry_codigo.grab_focus()
 
 
 class Llegadas(gtk.VBox):
-    __gsignals__ = {'actualizar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
+    __gsignals__ = {'finalizar-salida': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
      'cambiar-a-boletos': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())}
 
-    def __init__(self, http, padre):
+    def __init__(self, padre):
         super(Llegadas, self).__init__()
-        self.http = http
+        self.salida = None
+        self.http = Http()
         self.padre = padre
         self.w = self.get_parent_window()
         hbox_label = gtk.HBox(True, 0)
@@ -1403,14 +1449,14 @@ class Llegadas(gtk.VBox):
         self.pack_start(sw, True, True, 0)
         sw.set_size_request(200, 100)
         sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
-        self.model = gtk.ListStore(int, str, str, str, str, str, str, str)
-        columnas = ('N\xc2\xba', 'PUNTO', 'H.ORIG', 'H.CALC', 'H.REAL', 'VOL.')
+        self.model = gtk.ListStore(int, str, str, str, str, gobject.TYPE_PYOBJECT)
+        columnas = ('#', 'CONTROL', 'H.PROG', 'H.REAL', 'VOL.')
         self.treeview = Widgets.TreeView(self.model)
         sw.add(self.treeview)
         self.treeview.set_enable_search(False)
         for i, columna in enumerate(columnas):
             column = Widgets.TreeViewColumn(columna)
-            if i == 5:
+            if i == 4:
                 cell = Widgets.Cell()
                 cell.connect('editado', self.editado)
                 cell.set_property('editable', True)
@@ -1427,17 +1473,30 @@ class Llegadas(gtk.VBox):
 
         hbox_botones = gtk.HBox(False, 0)
         self.pack_start(hbox_botones, False, False, 0)
-        but_actualizar = Widgets.Button('actualizar.png', '', 16, tooltip='Actualizar las Voladas')
-        hbox_botones.pack_start(but_actualizar, False, False, 0)
-        but_actualizar.connect('clicked', self.actualizar_datos)
-        self.but_registrar = Widgets.Button('reporte.png', 'Registrar Tarjeta')
-        hbox_botones.pack_start(self.but_registrar, False, False, 0)
-        self.but_registrar.connect('clicked', self.registrar)
+
+        toolbar = Widgets.Toolbar([
+            ('Actualizar las Voladas', 'actualizar.png', self.actualizar_datos),
+            ('Registrar Tarjeta', 'reporte.png', self.registrar)
+        ])
+        hbox_botones.pack_start(toolbar, True, True, 0)
+
+        # but_actualizar = Widgets.Button('actualizar.png', '', 16, tooltip='Actualizar las Voladas')
+        # hbox_botones.pack_start(but_actualizar, False, False, 0)
+        # but_actualizar.connect('clicked', self.actualizar_datos)
+        # self.but_registrar = Widgets.Button('reporte.png', 'Registrar Tarjeta')
+        # hbox_botones.pack_start(self.but_registrar, False, False, 0)
+        # self.but_registrar.connect('clicked', self.registrar)
+
+        # self.but_guardar = toolbar.add_button_end('Guardar Llegadas', 'guardar.png', self.guardar)
+
         self.but_guardar = Widgets.Button('guardar.png', 'Guardar')
         hbox_botones.pack_end(self.but_guardar, False, False, 0)
         self.but_guardar.connect('clicked', self.guardar)
         self.treeview.connect('button-release-event', self.editar)
         self._media_vuelta = False
+
+    def get_modelo(self, i):
+        return self.model[i][len(self.model[i]) - 1]
 
     def update_selector(self):
         self.dia, self.ruta, self.lado = self.selector.get_datos()
@@ -1451,63 +1510,72 @@ class Llegadas(gtk.VBox):
     def set_cursor(self):
         self.treeview.set_cursor(0, self.column, True)
 
-    def actualizar_datos(self, *args):
-        if self.padron is None:
-            return
-        if self.salida is None:
-            return
-        datos = {'salida_id': self.salida,
-         'padron': self.padron,
-         'ruta_id': self.ruta,
-         'lado': self.lado}
-        data = self.http.load('tabla-llegadas', datos)
-        if data:
-            self.actualizar(data)
-
-    def actualizar(self, diccionario):
-        lista = diccionario['tabla']
-        self.model.clear()
-        for fila in lista:
-            self.model.append(fila)
-
-        self.escribir(diccionario['padron'], diccionario['id'], diccionario['hora'], diccionario['dia'])
-        if diccionario['id'] is None:
-            self.but_guardar.set_sensitive(False)
-        else:
-            self.but_guardar.set_sensitive(True)
-
-    def escribir(self, padron = None, salida = None, hora = None, dia = None):
+    def set_salida(self, salida=None):
         self.salida = salida
-        if padron is None:
+        self.label_padron.set_text('No hay salida')
+        self.label_hora.set_text('--:--')
+        self.label_dia.set_text('--/--/--')
+        self.model.clear()
+        if self.salida:
+            if isinstance(self.salida, models.SalidaCompleta):
+                self.actualizar()
+            else:
+                self.actualizar_datos()
+                self.actualizar()
+
+    def actualizar_datos(self, *args):
+        if isinstance(self.salida, int):
+            salida = self.salida
+        else:
+            salida = self.salida
+        datos = {
+            'salida': salida
+        }
+        data = self.http.load('salida-completa', datos)
+        if data:
+            self.salida = models.SalidaCompleta(data['salida'])
+
+    def actualizar(self):
+        self.model.clear()
+        for control in self.salida.get_controles():
+            self.model.append(control.get_fila_llegadas())
+        if self.salida is None:
             self.label_padron.set_text('No hay salida')
-            self.padron = None
-        else:
-            self.label_padron.set_text('Padr\xc3\xb3n %s' % padron)
-            self.padron = padron
-        if hora is None:
             self.label_hora.set_text('--:--')
-        else:
-            self.label_hora.set_text(str(hora))
-        if dia is None:
             self.label_dia.set_text('--/--/--')
         else:
-            self.label_dia.set_text(str(dia))
+            self.label_padron.set_text('Padrón %s' % self.salida.padron)
+            self.label_hora.set_text(self.salida.get_inicio().strftime('%H:%M'))
+            self.label_dia.set_text(self.salida.get_inicio().strftime('%Y-%m-%d'))
+
+        if self.salida.estado == 'R':
+            self.but_guardar.set_sensitive(True)
+        else:
+            self.but_guardar.set_sensitive(False)
 
     def editado(self, widget, path, new_text):
         if new_text == '':
             new_text = '0'
+        control = self.get_modelo(path)
         try:
             int(new_text)
         except:
             if new_text.upper() == 'NM':
                 new_text = 'NM'
-                self.model[path][5] = 'NM'
+                self.model[path][4] = 'NM'
+                control.no_marcar()
             elif new_text.upper() == 'FM':
-                self.model[path][5] = 'FM'
+                self.model[path][4] = 'FM'
+                control.falla_mecanica()
+                for i, r in enumerate(self.model):
+                    if i  > path:
+                        control = self.get_modelo(i)
+                        control.no_marcar()
                 self.but_guardar.grab_focus()
                 return
         else:
-            self.model[path][5] = new_text
+            self.model[path][4] = new_text
+            self.model[path][3] = control.set_volada(int(new_text))
         finally:
             if path + 1 == len(self.model):
                 self.but_guardar.grab_focus()
@@ -1523,35 +1591,42 @@ class Llegadas(gtk.VBox):
             return
 
     def guardar(self, widget):
-        voladas = []
-        llegadas = []
+        voladas = {}
+        estado = 'T'
+        record = 0
+        multa = 0
+        fin = self.salida.inicio
         for i, fila in enumerate(self.model):
-            voladas.append(fila[5])
+            control = self.get_modelo(i)
+            voladas[control.g] = control.get_dict()
+            record += control.get_record()
+            multa += control.get_multa()
+            if control.estado == 'F':
+                estado = 'F'
+            if estado != 'F':
+                if control.real:
+                    fin = control.real.strftime('%Y-%m-%dT%H:%M:%S')
 
-        datos = {'salida_id': self.salida,
-         'voladas': json.dumps(voladas),
-         'actualizar': True,
-         'dia': self.dia,
-         'ruta_id': self.ruta,
-         'lado': self.lado,
-         'padron': self.padron}
-        data = self.http.load('guardar-llegadas', datos)
-        if data:
-            self.emit('actualizar', data)
-            if self.padre._media_vuelta:
-                self.padre._media_vuelta = False
-                self.emit('cambiar-a-boletos')
-            if self.padre._vuelta_completa:
-                self.padre._media_vuelta = True
-            self.padre.hora.set_sensitive(True)
+        datos = {
+            'salida': self.salida.id,
+            'controles': json.dumps(voladas),
+            'estado': estado,
+            'record': record,
+            'multa': multa,
+            'fin': fin,
+        }
+        if self.salida.estado == 'R':
+            data = self.http.load('finalizar-salida', datos)
+            if data:
+                self.emit('finalizar-salida', data)
 
 
 class Cortes(gtk.VBox):
     __gsignals__ = {'terminado': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT,))}
 
-    def __init__(self, http):
+    def __init__(self):
         super(Cortes, self).__init__()
-        self.http = http
+        self.http = Http()
         self.w = self.get_parent_window()
         hbox_label = gtk.HBox(True, 0)
         self.rojo = '#EB9EA3'
@@ -1673,12 +1748,16 @@ class Cortes(gtk.VBox):
 
 
 class Boletos(gtk.VBox):
-    __gsignals__ = {'actualizar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
-     'grifo': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())}
+    __gsignals__ = {
+        'boletaje-guardado': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
+        'boletaje-borrado': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,)),
+        'grifo': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+    }
 
-    def __init__(self, http, padre):
+    def __init__(self, padre):
         super(Boletos, self).__init__()
-        self.http = http
+        self.salida = None
+        self.http = Http
         self.padre = padre
         self.w = self.get_parent_window()
         hbox_label = gtk.HBox(True, 0)
@@ -1697,8 +1776,8 @@ class Boletos(gtk.VBox):
         self.pack_start(sw, True, True, 0)
         sw.set_size_request(200, 100)
         sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
-        self.model = gtk.ListStore(str, str, str, str, str, str, str, str, str, int, str, str, bool, str, int, int, int)
-        columnas = ('N\xc2\xba', 'BOLETO', 'TAR', 'SERIE', 'N.I', 'CANT', 'N.F')
+        self.model = gtk.ListStore(str, str, str, str, str, str, str, str, gobject.TYPE_PYOBJECT)
+        columnas = ('#', 'BOLETO', 'TAR', 'SERIE', 'N.I', 'CANT', 'N.F')
         self.treeview = Widgets.TreeView(self.model)
         sw.add(self.treeview)
         self.treeview.set_enable_search(False)
@@ -1707,9 +1786,10 @@ class Boletos(gtk.VBox):
             if i == 6:
                 cell = Widgets.CellBoleto()
                 column.pack_start(cell, True)
-                column.set_attributes(cell, text=i, background=11)
+                column.set_attributes(cell, text=i, background=7)
                 cell.connect('editado', self.editado)
                 cell.connect('inicio', self.rellenar)
+                cell.connect('usar-reserva', self.escoger_reserva)
                 cell.set_property('editable', True)
                 column.set_flags(gtk.CAN_FOCUS)
                 column.set_min_width(60)
@@ -1723,86 +1803,94 @@ class Boletos(gtk.VBox):
             self.treeview.append_column(column)
             column.encabezado()
         hbox_botones = gtk.HBox(False, 0)
-        but_reserva = Widgets.Button(None, '<span foreground="#FF0000" weight="bold">R</span>', tooltip='Reservas y Suministros')
-        hbox_botones.pack_start(but_reserva, False, False, 0)
-        but_reserva.connect('clicked', self.anular_reserva)
-        but_actualizar = Widgets.Button('actualizar.png', size=16, tooltip='Actualizar')
-        hbox_botones.pack_start(but_actualizar, False, False, 0)
-        but_actualizar.connect('clicked', self.actualizar_datos)
-        self.but_reporte = Widgets.Button('reporte.png', tooltip='Boletaje por Salida')
-        hbox_botones.pack_start(self.but_reporte, False, False, 0)
-        self.but_reporte.connect('clicked', self.reporte)
-        self.but_pagar = Widgets.Button('caja.png', tooltip='Reporte de Gastos del Día')
-        hbox_botones.pack_start(self.but_pagar, False, False, 0)
-        self.but_pagar.connect('clicked', self.pagar)
-        self.but_deudas = Widgets.Button('credito.png', tooltip='Deudas')
-        hbox_botones.pack_start(self.but_deudas, False, False, 0)
-        self.but_deudas.connect('clicked', self.deudas)
-        self.but_liquidar = Widgets.Button('liquidar.png', tooltip='Nueva Liquidación')
-        hbox_botones.pack_start(self.but_liquidar, False, False, 0)
-        self.but_liquidar.connect('clicked', self.liquidar)
-        self.but_transbordo = Widgets.Button('transbordo.png', tooltip='Transbordo')
-        hbox_botones.pack_start(self.but_transbordo, False, False, 0)
-        self.but_transbordo.connect('clicked', self.transbordo)
-        self.but_ticket_reporte = Widgets.Button('imprimir.png', tooltip='Ticket de Suministros')
-        hbox_botones.pack_start(self.but_ticket_reporte, False, False, 0)
-        self.but_ticket_reporte.connect('clicked', self.ticket_reporte)
-        self.but_pedir_liquidar = Widgets.Button('cuenta.png', tooltip='Pedir Cuenta')
-        hbox_botones.pack_start(self.but_pedir_liquidar, False, False, 0)
-        self.but_pedir_liquidar.connect('clicked', self.pedir_liquidar)
+
+        herramientas = [
+            ('Reservas y Suministros', 'reserva.png', self.anular_reserva),
+            ('Actualizar', 'actualizar.png', self.actualizar_datos),
+            ('Boletaje por Salida', 'reporte.png', self.reporte),
+            ('Reporte de Gastos del Día', 'caja.png', self.pagar),
+            ('Cobrar Deudas', 'credito.png', self.deudas),
+            ('Reporte de Caja', 'cuenta.png', self.reporte),
+            # ('Deudas', 'credito.png', self.deudas),
+            ('Nueva Liquidación', 'liquidar.png', self.liquidar),
+            ('Transbordo', 'transbordo.png', self.transbordo),
+            ('Ticket de Suministros', 'imprimir.png', self.ticket_reporte),
+            ('Pedir Cuenta', 'pos.png', self.pedir_liquidar),
+        ]
+        toolbar = Widgets.Toolbar(herramientas)
+        hbox_botones.pack_start(toolbar, True, True, 0)
+
         self.but_corte = Widgets.Button('corte.png')
         self.but_corte.connect('clicked', self.corte)
+
+        # self.but_guardar = toolbar.add_button_end('Guardar Boletos', 'guardar.png', self.guardar)
+        self.but_borrar = toolbar.add_button_end('Borrar Último Boletaje', 'delete.png', self.borrar)
+
         self.but_guardar = Widgets.Button('guardar.png', 'Guardar')
         hbox_botones.pack_end(self.but_guardar, False, False, 0)
         self.but_guardar.connect('clicked', self.guardar)
-        self.but_borrar = Widgets.Button('cancelar.png', 'Borrar')
-        hbox_botones.pack_end(self.but_borrar, False, False, 0)
-        self.but_borrar.connect('clicked', self.borrar)
+        # self.but_borrar = Widgets.Button('cancelar.png', 'Borrar')
+        # hbox_botones.pack_end(self.but_borrar, False, False, 0)
+        # self.but_borrar.connect('clicked', self.borrar)
         self.salida = 0
         self.padron = 0
         self.backup = False
         self.pack_start(hbox_botones, False, False, 0)
         self.menu = gtk.Menu()
-        item1 = gtk.MenuItem('Corregir')
+        # item1 = gtk.MenuItem('Corregir')
         item2 = gtk.MenuItem('Anular')
         item3 = gtk.MenuItem('Eliminar Anulado')
-        item1.connect('activate', self.corregir)
+        # item1.connect('activate', self.corregir)
         item2.connect('activate', self.anular)
         item3.connect('activate', self.eliminar)
-        self.menu.append(item1)
+        # self.menu.append(item1)
         self.menu.append(item2)
         self.menu.append(item3)
         self.treeview.connect('button-release-event', self.on_release_button)
 
+    def get_modelo(self, path):
+        return self.model[path][8]
+
+    def set_salida(self, salida=None, unidad=None):
+        self.salida = salida
+        self.unidad = unidad
+        self.label_padron.set_text('No hay salida')
+        self.label_hora.set_text('--:--')
+        self.label_dia.set_text('--/--/--')
+        self.model.clear()
+        if self.salida:
+            if not isinstance(self.salida, models.SalidaCompleta):
+                self.actualizar_datos()
+        self.actualizar()
+
     def anular_reserva(self, *args):
-        datos = {'ruta_id': self.ruta,
-         'padron': self.padron}
-        reservas = self.http.load('reserva-stock', datos)
-        if reservas:
-            dialog = ReservaStock(self.padron, self.selector, self.http, reservas)
+        if self.unidad:
+            dialog = ReservaStock(self.http, self.unidad)
             if dialog.iniciar():
-                self.escribir(None, dialog.respuesta)
+                self.padre.escribir_datos_unidad()
             dialog.cerrar()
 
     def on_release_button(self, treeview, event):
-        if event.button == 3:
-            x = int(event.x)
-            y = int(event.y)
-            t = event.time
-            pthinfo = treeview.get_path_at_pos(x, y)
-            if pthinfo is not None:
-                path, col, cellx, celly = pthinfo
-                treeview.grab_focus()
-                treeview.set_cursor(path, col, 0)
-                self.menu.popup(None, None, None, event.button, t)
-                self.menu.show_all()
-            return True
-        try:
-            path, column = self.treeview.get_cursor()
-            path = int(path[0])
-            self.treeview.set_cursor(path, self.column, True)
-        except:
-            return
+        if isinstance(self.salida, (models.SalidaCompleta, models.Salida)):
+            if not self.salida.boletos_save:
+                if event.button == 3:
+                            x = int(event.x)
+                            y = int(event.y)
+                            t = event.time
+                            pthinfo = treeview.get_path_at_pos(x, y)
+                            if pthinfo is not None:
+                                path, col, cellx, celly = pthinfo
+                                treeview.grab_focus()
+                                treeview.set_cursor(path, col, 0)
+                                self.menu.popup(None, None, None, event.button, t)
+                                self.menu.show_all()
+                            return True
+                try:
+                    path, column = self.treeview.get_cursor()
+                    path = int(path[0])
+                    self.treeview.set_cursor(path, self.column, True)
+                except:
+                    return
 
     def set_cursor(self):
         self.treeview.set_cursor(0, self.column, True)
@@ -1828,8 +1916,6 @@ class Boletos(gtk.VBox):
             })
         }
         self.http.load('pedir-liquidacion', datos)
-
-
 
     def deudas(self, *args):
         if self.padron:
@@ -1875,59 +1961,103 @@ class Boletos(gtk.VBox):
             return
         if self.salida is None:
             return
-        datos = {'salida_id': self.salida,
-         'padron': self.padron,
-         'ruta_id': self.ruta,
-         'lado': self.lado}
-        data = self.http.load('tabla-boletaje', datos)
+        datos = {
+            'salida': self.salida
+        }
+        data = self.http.load('salida-completa', datos)
         if data:
-            self.actualizar(data)
+            self.salida = data['salida']
+            self.actualizar()
 
-    def actualizar(self, diccionario):
+    def actualizar(self):
         self.model.clear()
-        lista = diccionario['tabla']
         self.flag_editado = []
-        self.backup = False
-        for fila in lista:
-            self.but_guardar.set_sensitive(True)
-            self.model.append(fila)
-            self.flag_editado.append(False)
-
-        self.escribir(diccionario['padron'], diccionario['id'], diccionario['hora'], diccionario['dia'])
-        if diccionario['id'] is None:
-            self.no_editar = True
-        else:
-            self.no_editar = False
-        self.but_guardar.set_sensitive(False)
-
-    def escribir(self, padron = None, salida = None, hora = None, dia = None):
-        if padron is None:
-            self.label_padron.set_markup('No hay salida')
-            self.padron = None
-        else:
-            self.label_padron.set_markup('Padr\xc3\xb3n %s' % padron)
-            self.padron = int(padron)
-        self.salida = salida
-        if hora is None:
-            self.label_hora.set_markup('--:--')
-        else:
-            self.label_hora.set_markup(hora)
-        if dia is None:
-            self.label_dia.set_markup('--/--/--')
-        else:
-            self.label_dia.set_markup(dia)
-        if salida is None:
+        if not isinstance(self.salida, (models.SalidaCompleta, models.Salida)):
+            self.label_padron.set_text('BOLETOS EN STOCK')
+            self.label_hora.set_text('--:--')
+            self.label_dia.set_text('--/--/--')
+            for suministro in self.unidad.get_suministros():
+                if suministro.mostrar:
+                    self.model.append(suministro.get_fila_boletaje())
+                    self.but_guardar.set_sensitive(True)
+                    self.flag_editado.append(False)
+            self.but_borrar.set_sensitive(False)
             self.but_guardar.set_sensitive(False)
+        else:
+            self.label_padron.set_text('Padrón %s' % self.salida.padron)
+            self.label_hora.set_text(self.salida.get_inicio().strftime('%H:%M'))
+            self.label_dia.set_text(self.salida.get_inicio().strftime('%Y-%m-%d'))
+
+
+            if self.salida.tickets_save:
+                for ticket in self.salida.get_tickets():
+                    self.model.append(ticket.get_fila_boletaje())
+
+            if self.salida.boletos_save:
+                for boleto in self.salida.get_boletos():
+                    self.model.append(boleto.get_fila_boletaje())
+                    self.but_guardar.set_sensitive(True)
+                    self.flag_editado.append(False)
+                self.but_borrar.set_sensitive(True)
+                self.but_guardar.set_sensitive(False)
+            else:
+                if self.unidad and self.unidad.actual == self.salida.id:
+                    for suministro in self.unidad.get_suministros():
+                        if suministro.mostrar:
+                            self.model.append(suministro.get_fila_boletaje())
+                            self.but_guardar.set_sensitive(True)
+                            self.flag_editado.append(False)
+                self.but_borrar.set_sensitive(False)
+                self.but_guardar.set_sensitive(True)
+
+                if self.salida.estado == 'R':
+                    self.label_hora.set_text('SALIDA EN RUTA')
+                    self.but_borrar.set_sensitive(False)
+                    self.but_guardar.set_sensitive(False)
 
     def rellenar(self, cell, editable, path):
-        boleto = self.model[path][4]
-        cell.reserva = self.model[path][14]
-        cell.inicio = boleto
-        if self.model[path][6] == '':
-            editable.set_text(boleto)
+        suministro = self.get_modelo(path)
+        if isinstance(suministro, models.Suministro):
+            cell.boleto = suministro.boleto.id
+            cell.inicio = suministro.inicio
+            if self.model[path][6] == '':
+                editable.set_text(suministro.get_actual())
+
+    def escoger_reserva(self, cell, path):
+        coincidencias = []
+        for s in self.unidad.get_suministros():
+            if s.boleto.id == cell.boleto and not s.mostrar:
+                coincidencias.append(s)
+                print('coincidencias', s, s.boleto.id, s.boleto.nombre)
+
+        if len(coincidencias) == 0:
+            Widgets.Alerta('Error', 'warning.png', 'El boleto no tiene reservas')
+        elif len(coincidencias) == 1:
+            self.set_visible(coincidencias[0].id)
+            self.get_modelo(path).terminar()
+        else:
+            lista = []
+            for c in coincidencias:
+                lista.append(('%s - %s' % (c.get_inicio(), c.get_fin()), c.id))
+            dialog = Widgets.Alerta_Combo('Escoja la reserva', 'editar.png',
+                                          'Seleccione la reserva con la que continuará', lista)
+            suministro_id = dialog.iniciar()
+            dialog.cerrar()
+            if suministro_id:
+                self.set_visible(suministro_id)
+                self.get_modelo(path).terminar()
+
+    def set_visible(self, suministro_id):
+        for s in self.unidad.get_suministros():
+            if suministro_id == s.id:
+                s.mostrar = True
+        self.actualizar()
+        for i, r in enumerate(self.model):
+            if suministro_id == self.get_modelo(i).id:
+                self.treeview.set_cursor(i, self.column, True)
 
     def editado(self, widget, path, new_text):
-        if self.no_editar:
+        if not self.but_guardar.get_sensitive():
             self.http.sonido.error()
             Widgets.Alerta('Finalice la salida', 'fin_de_ruta.png', 'Para poder grabar boletaje finalice la salida primero.')
             return
@@ -1937,14 +2067,21 @@ class Boletos(gtk.VBox):
             self.http.sonido.error()
             return
 
-        fila = self.model[path]
-        serie = fila[3]
-        inicio = int(fila[4])
-        fin = int(fila[10])
-        self.model[path][11] = '#FFFFFF'
+        suministro = self.get_modelo(path)
+        if suministro.terminado:
+            if path + 1 == len(self.model):
+                print('seleccionando botón')
+                self.but_guardar.grab_focus()
+            else:
+                self.treeview.set_cursor(path + 1, self.column, True)
+            return
+        serie = suministro.serie
+        inicio = suministro.actual
+        fin = suministro.fin
+        self.model[path][7] = '#CCCCCC'
         if inicio <= actual <= fin:
             cantidad = actual - inicio
-            limite = self.http.boletos_limites[str(fila[9])]
+            limite = suministro.boleto.get_limite_venta()
             if cantidad > limite:
                 self.http.sonido.error()
                 dialogo = Widgets.Alerta_SINO('Cuidado Boletaje Excesivo', 'error_numero.png', 'Est\xc3\xa1 intentando digitar un boletaje mayor a <span foreground="#F00" weight="bold">%d</span> boletos.\n' % limite + '\xc2\xbfDesea continuar de todas maneras?')
@@ -1954,198 +2091,124 @@ class Boletos(gtk.VBox):
                 dialogo.cerrar()
             self.model[path][6] = new_text
             self.model[path][5] = str(cantidad)
-            self.flag_editado[path] = True
-            self.but_guardar.set_sensitive(True)
-            for b in self.flag_editado:
-                if not b:
-                    self.but_guardar.set_sensitive(False)
+            suministro.guardar = actual
+            suministro.editado = True
+            suministro.terminado = False
 
             if path + 1 == len(self.model):
+                print('seleccionando botón')
                 self.but_guardar.grab_focus()
             else:
                 self.treeview.set_cursor(path + 1, self.column, True)
-        else:
-            serie = fila[13]
-            inicio = int(fila[14])
-            fin = int(fila[15])
-            if inicio <= actual and actual <= fin:
-                cantidad = cantidad = int(fila[10]) - int(fila[4]) + actual - inicio
-                limite = self.http.boletos_limites[str(fila[9])]
-                if cantidad > limite:
-                    self.http.sonido.error()
-                    dialogo = Widgets.Alerta_SINO('Cuidado Boletaje Excesivo', 'error_numero.png', 'Est\xc3\xa1 intentando digitar un boletaje mayor a <span foreground="#F00" weight="bold">%d</span> boletos.\n' % limite + '\xc2\xbfDesea continuar de todas maneras?')
-                    if not dialogo.iniciar():
-                        dialogo.cerrar()
-                        return
-                    dialogo.cerrar()
-                self.model[path][6] = new_text
-                self.model[path][5] = str(cantidad)
-                self.model[path][11] = '#DDCC99'
-                self.flag_editado[path] = True
-                self.but_guardar.set_sensitive(True)
-                for b in self.flag_editado:
-                    if not b:
-                        self.but_guardar.set_sensitive(False)
-
-                if path + 1 == len(self.model):
-                    self.but_guardar.grab_focus()
-                else:
-                    self.treeview.set_cursor(path + 1, self.column, True)
-            else:
-                self.http.sonido.error()
 
     def guardar(self, widget):
         boletaje = []
-        serie = []
-        actual = []
-        reserva = []
         for i, fila in enumerate(self.model):
-            boletaje.append(fila[8])
-            serie.append(fila[5])
-            actual.append(fila[6])
-            reserva.append(fila[16])
+            s = self.get_modelo(i)
+            boletaje.append(s.get_json_boletaje())
 
-        datos = {'salida_id': self.salida,
-                 'boletaje': json.dumps(boletaje),
-                 'serie': json.dumps(serie),
-                 'actual': json.dumps(actual),
-                 'reserva': json.dumps(reserva),
-                 'dia': self.dia,
-                 'ruta_id': self.ruta,
-                 'lado': self.lado,
-                 'padron': self.padron}
-        print 'guardar boletaje', datos
+        datos = {
+            'salida': self.salida.id,
+            'boletaje': json.dumps(boletaje)
+        }
         data = self.http.load('guardar-boletaje', datos)
         if data:
-            if self.padre._vuelta_completa:
-                dialogo = Widgets.Alerta_Dia_Hora('Salida del lado Contrario', 'regreso.png', 'Indique la hora de regreso de la unidad %s' % self.padron)
-                respuesta = dialogo.iniciar()
-                if respuesta:
-                    hora = dialogo.hora.get_time()
-                    dia = dialogo.fecha.get_date()
-                    datos = {
-                        'dia': dia,
-                        'hora': hora,
-                        'ruta_id': self.ruta,
-                        'lado': int(not self.lado),
-                        'padron': self.padron
-                    }
-                    data = self.http.load('despachar-otrolado', datos)
-                dialogo.cerrar()
+            # if self.padre._vuelta_completa:
+            #     dialogo = Widgets.Alerta_Dia_Hora('Salida del lado Contrario', 'regreso.png', 'Indique la hora de regreso de la unidad %s' % self.padron)
+            #     respuesta = dialogo.iniciar()
+            #     if respuesta:
+            #         hora = dialogo.hora.get_time()
+            #         dia = dialogo.fecha.get_date()
+            #         datos = {
+            #             'dia': dia,
+            #             'hora': hora,
+            #             'ruta_id': self.ruta,
+            #             'lado': int(not self.lado),
+            #             'padron': self.padron
+            #         }
+            #         data = self.http.load('despachar-otrolado', datos)
+            #     dialogo.cerrar()
             if data:
-                self.emit('actualizar', data)
-                if self.padre._vuelta_completa:
-                    self.padre.emit('cambiar-a-llegadas')
-                    self.padre._vuelta_completa = False
+                self.emit('boletaje-guardado', data)
+                # if self.padre._vuelta_completa:
+                #     self.padre.emit('cambiar-a-llegadas')
+                #     self.padre._vuelta_completa = False
 
     def borrar(self, widget):
         dialogo = Widgets.Alerta_SINO('Cuidado Borrar Boletaje', 'warning.png', '\xc2\xbfEst\xc3\xa1 seguro de borrar el boletaje?')
         if dialogo.iniciar():
             dialogo.cerrar()
-            datos = {'salida_id': self.salida,
-             'dia': self.dia,
-             'ruta_id': self.ruta,
-             'lado': self.lado,
-             'padron': self.padron}
+            datos = {'salida': self.salida.id}
             data = self.http.load('borrar-boletaje', datos)
             if data:
-                backup = []
-                for fila in self.model:
-                    if fila[6] == '' or self.backup:
-                        backup.append(fila[4])
-                    else:
-                        backup.append(fila[6])
+                backup = {}
+                for i, fila in enumerate(self.model):
+                    modelo = self.get_modelo(i)
+                    if modelo.m is not None:
+                        backup[modelo.su] = modelo
 
-                self.emit('actualizar', data)
-                for i, b in enumerate(backup):
-                    self.model[i][6] = b
+                self.emit('boletaje-borrado', data)
 
-                self.backup = True
+                for i, fila in enumerate(self.model):
+                    modelo = self.get_modelo(i)
+                    if modelo.id in backup:
+                        modelo.guardar = backup[modelo.id].f
+                        modelo.editado = True
+                        self.model[i] = modelo.get_fila_boletaje()
             return
         dialogo.cerrar()
 
-    def corregir(self, *args):
-        try:
-            path, column = self.treeview.get_cursor()
-            path = int(path[0])
-            stock_id = self.model[path][8]
-        except:
-            return
+    def get_selected(self):
+        path, column = self.treeview.get_cursor()
+        path = int(path[0])
+        return self.get_modelo(path)
 
-        dialogo = Widgets.Alerta_Numero('Corregir boletaje', 'editar.png', 'Indique el boleto con el\nque termino la vuelta.', 6)
-        numero = int(dialogo.iniciar())
-        if numero:
-            datos = {'stock_id': stock_id,
-             'salida_id': self.salida,
-             'numero': numero,
-             'ruta_id': self.ruta,
-             'lado': self.lado,
-             'dia': self.dia,
-             'padron': self.padron}
-            data = self.http.load('corregir-boletaje', datos)
-            if data:
-                self.emit('actualizar', data)
-        dialogo.cerrar()
+    def get_iter(self):
+        path, column = self.treeview.get_cursor()
+        path = int(path[0])
+        return self.model.get_iter(path)
 
     def anular(self, *args):
-        try:
-            path, column = self.treeview.get_cursor()
-            path = int(path[0])
-            stock_id = self.model[path][8]
-        except:
+        suministro = self.get_selected()
+        if not suministro.editado:
+            Widgets.Alerta('Error Números', 'error_numero.png',
+                           'Primero debe definir el boleto inicial\npara el siguiente viaje')
             return
-
-        dialogo = Widgets.Alerta_Anular_Numeros('Anular boletaje', 'error_numero.png', 'Indique el PRIMER boleto a anular y\nel \xc3\x9aLTIMO boleto a anular')
+        dialogo = Widgets.Alerta_Anular_Numeros('Anular boletaje', 'error_numero.png',
+                                                'Indique el PRIMER y el ÚLTIMO boleto a anular\n' +
+                                                '(%s - %s)' % (suministro.get_actual(), suministro.get_guardar_1()))
         numeros = dialogo.iniciar()
-        if numeros and len(numeros) == 2:
-            inicio = int(self.model[path][4])
-            fin = int(self.model[path][6])
-            if numeros[0] < inicio or numeros[1] >= fin:
-                dialogo.cerrar()
-                return Widgets.Alerta('Error N\xc3\xbameros', 'error_numero.png', 'Los n\xc3\xbameros no pertenecen a la venta seleccionada "%s - %s".' % (inicio, fin - 1))
-            if numeros[0] > numeros[1]:
-                dialogo.cerrar()
-                return Widgets.Alerta('Error N\xc3\xbameros', 'error_numero.png', 'El rango est\xc3\xa1 invertido.')
-            pregunta = Widgets.Alerta_Texto('Anulaci\xc3\xb3n de Boletos', ('Perdida', 'Salteo', 'Retenido por Inspector', 'Deteriorado'))
-            motivo = pregunta.iniciar()
-            if motivo:
-                datos = {'stock_id': stock_id,
-                 'inicio': numeros[0],
-                 'fin': numeros[1],
-                 'ruta_id': self.ruta,
-                 'lado': self.lado,
-                 'dia': self.dia,
-                 'padron': self.padron,
-                 'motivo': motivo}
-                data = self.http.load('anular-boletaje', datos)
-                if data:
-                    self.emit('actualizar', data)
         dialogo.cerrar()
+        if numeros and len(numeros) == 2:
+            if not suministro.puede_anular(numeros[0], numeros[1]):
+                return Widgets.Alerta('Error Números', 'error_numero.png',
+                                      'Los números no pertenecen a la venta seleccionada "%s - %s".' %
+                                      (suministro.get_actual(), suministro.get_guardar_1()))
+            if numeros[0] > numeros[1]:
+                return Widgets.Alerta('Error Números', 'error_numero.png', 'El rango está invertido.')
+            pregunta = Widgets.Alerta_Texto('Anulación de Boletos', ('Perdida', 'Salteo', 'Retenido por Inspector', 'Deteriorado'))
+            motivo = pregunta.iniciar()
+            pregunta.cerrar()
+            if motivo:
+                anulacion = suministro.anular(numeros[0], numeros[1], unicode(motivo))
+                self.model.insert_after(self.get_iter(), anulacion.get_fila_boletaje())
 
     def eliminar(self, *args):
-        try:
-            path, column = self.treeview.get_cursor()
-            path = int(path[0])
-            stock_id = self.model[path][8]
-        except:
+        modelo = self.get_selected()
+        if isinstance(modelo, models.Suministro):
+            Widgets.Alerta('Error', 'error_numero.png',
+                           'Sólo puede eliminar una anulación (rojo)')
             return
-
-        datos = {'stock_id': stock_id,
-         'ruta_id': self.ruta,
-         'lado': self.lado,
-         'dia': self.dia,
-         'padron': self.padron}
-        data = self.http.load('eliminar-anulacion', datos)
-        if data:
-            self.emit('actualizar', data)
+            self.model.remove(self.get_iter())
 
 
 class Inspectoria(gtk.VBox):
     __gsignals__ = {'actualizar': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_PYOBJECT,))}
 
-    def __init__(self, http):
+    def __init__(self):
         super(Inspectoria, self).__init__()
-        self.http = http
+        self.salida = None
+        self.http = Http()
         self.w = self.get_parent_window()
         hbox_label = gtk.HBox(True, 0)
         self.pack_start(hbox_label, False, False, 0)
@@ -2189,9 +2252,15 @@ class Inspectoria(gtk.VBox):
 
         hbox_botones = gtk.HBox(False, 0)
         self.pack_start(hbox_botones, False, False, 0)
-        but_actualizar = Widgets.Button('actualizar.png', '', 16, tooltip='Actualizar')
-        hbox_botones.pack_start(but_actualizar, False, False, 0)
-        but_actualizar.connect('clicked', self.actualizar_datos)
+
+        toolbar = Widgets.Toolbar([
+            ('Actualizar Inspectorias', 'actualizar.png', self.actualizar_datos)
+        ])
+        hbox_botones.pack_start(toolbar, True, True, 0)
+        # but_actualizar = Widgets.Button('actualizar.png', '', 16, tooltip='Actualizar')
+        # hbox_botones.pack_start(but_actualizar, False, False, 0)
+        # but_actualizar.connect('clicked', self.actualizar_datos)
+        # self.but_guardar = toolbar.add_button_end('Guardar Inspectoria', 'guardar.png', self.guardar)
         self.but_guardar = Widgets.Button('guardar.png', 'Guardar')
         hbox_botones.pack_end(self.but_guardar, False, False, 0)
         self.but_guardar.connect('clicked', self.guardar)
@@ -2200,6 +2269,15 @@ class Inspectoria(gtk.VBox):
         item2.connect('activate', self.borrar)
         self.menu.append(item2)
         self.treeview.connect('button-release-event', self.on_release_button)
+
+    def set_salida(self, salida=None):
+        self.salida = salida
+        self.label_padron.set_text('No hay salida')
+        self.label_hora.set_text('--:--')
+        self.label_dia.set_text('--/--/--')
+        self.model.clear()
+        if self.salida:
+            pass
 
     def on_release_button(self, treeview, event):
         if event.button == 3:
@@ -2256,33 +2334,28 @@ class Inspectoria(gtk.VBox):
         if data:
             self.actualizar(data)
 
-    def actualizar(self, diccionario):
-        lista = diccionario['tabla']
+    def actualizar(self):
         self.model.clear()
-        for fila in lista:
-            self.model.append(fila)
-
+        for inspect in self.salida.get_inspectoria():
+            self.model.append(inspect.get_fila_inspectoria())
         self.model.append(('', '', '', 0))
-        self.escribir(diccionario['padron'], diccionario['id'], diccionario['hora'], diccionario['dia'])
-        if diccionario['id'] is None:
+        for ticket in self.salida.get_tickets():
+            self.model.append(ticket.get_fila_boletaje())
+        if self.salida is None:
+            self.label_padron.set_text('No hay salida')
+            self.label_hora.set_text('--:--')
+            self.label_dia.set_text('--/--/--')
+        else:
+            self.label_padron.set_text('Padrón %s' % self.salida.padron)
+            self.label_hora.set_text(self.salida.get_inicio().strftime('%H:%M'))
+            self.label_dia.set_text(self.salida.get_inicio().strftime('%Y-%m-%d'))
+
+        if self.salida.boletos_save:
+            self.but_borrar.set_sensitive(True)
             self.but_guardar.set_sensitive(False)
         else:
+            self.but_borrar.set_sensitive(False)
             self.but_guardar.set_sensitive(True)
-        h, m = diccionario['hora'].split(':')
-        try:
-            self.inicio = int(h) * 60 + int(m)
-        except:
-            self.fin = None
-            return
-
-        h, m = diccionario['fin'].split(':')
-        try:
-            self.fin = int(h) * 60 + int(m)
-        except:
-            self.fin = None
-        else:
-            if self.fin < self.inicio:
-                self.fin += 1440
 
     def editado(self, widget, path, new_text):
         if new_text == '':
@@ -2437,8 +2510,10 @@ class Llamada(gtk.HBox):
 
 
 class Frecuencia(Widgets.Numero):
-    __gsignals__ = {'frecuencia-auto': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ()),
-     'frecuencia-manual': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT,))}
+    __gsignals__ = {
+        'cambiar-frecuencia': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (gobject.TYPE_INT,)),
+        'auto-frecuencia': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, ())
+    }
 
     def __init__(self, label):
         super(Frecuencia, self).__init__(3)
@@ -2447,22 +2522,24 @@ class Frecuencia(Widgets.Numero):
         self.connect('activate', self.manual)
         self.connect('cancel', self.auto)
         self.es_auto = True
+        self.frec = 0
 
     def auto(self, *args):
-        self.set_text(str(self.frec))
-        self.emit('frecuencia-auto')
+        self.set_auto(str(self.frec))
+        self.emit('auto-frecuencia')
 
     def manual(self, *args):
         frec = self.get_int()
-        self.emit('frecuencia-manual', frec)
+        self.emit('cambiar-frecuencia', frec)
 
-    def set_frec(self, f, manual):
+    def set_auto(self, f):
         self.frec = f
         self.set_text(str(f))
-        if manual:
-            self.label.set_markup('<b>Frec Manual</b>')
-        else:
-            self.label.set_markup('Frec Auto')
+        self.label.set_markup('Frec Auto')
+
+    def set_manual(self, f):
+        self.set_text(str(f))
+        self.label.set_markup('<b>Frec Manual</b>')
 
     def get(self):
         return int(self.get_text())
@@ -2470,24 +2547,25 @@ class Frecuencia(Widgets.Numero):
 
 class Reloj(gtk.HBox):
 
-    def __init__(self, http):
+    def __init__(self):
         super(Reloj, self).__init__(0, False)
-        self.http = http
+        self.http = Http()
         self.horas = []
+        self.color = '#0188d1'
         self.frecuencia = 0
         self.espacio = datetime.timedelta(seconds=60)
         self.limite = self.get_time() + self.espacio + self.espacio
         self.estado = 'NORMAL'
-        url = 'http://%s/despacho/reloj' % self.http.dominio
-        if os.name == 'nt':
-            self.www = Chrome.Browser(url, 230, 35)
-        else:
-            self.www = Chrome.IFrame(url, 230, 35)
-        self.pack_start(self.www, True, True, 0)
-        http.reloj.connect('tic-tac', self.run)
+        self.http.reloj.connect('tic-tac', self.run)
+        self.eventBox = gtk.EventBox()
+        self.pack_start(self.eventBox, True, True, 0)
+        self.label = gtk.Label('--:--:--')
+        self.eventBox.add(self.label)
+        self.eventBox.set_size_request(300, 50)
 
     def run(self, *args):
         t = self.get_time()
+        self.label.set_markup('<span foreground="%s" font_desc="Sans 32" weight="ultrabold">%s</span>' % (self.color, self.get_text()))
         if not self.horas == []:
             h, p = self.horas[0]
             if t == h:
@@ -2497,14 +2575,17 @@ class Reloj(gtk.HBox):
                 self.horas.remove((h, p))
         if self.limite < t:
             if self.estado != 'ERROR':
-                self.www.execute_script('error();')
+                self.eventBox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0044'))
+                self.color = '#FFFFFF'
                 self.estado = 'ERROR'
         elif self.limite - self.espacio < t:
             if self.estado != 'CERCA':
-                self.www.execute_script('cerca();')
+                self.eventBox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FFFF44'))
+                self.color = '#000000'
                 self.estado = 'CERCA'
         elif self.estado != 'NORMAL':
-            self.www.execute_script('normal();')
+            self.eventBox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#BBBBBB'))
+            self.color = '#0188d1'
             self.estado = 'NORMAL'
 
     def get_text(self):
@@ -2522,20 +2603,8 @@ class Reloj(gtk.HBox):
     def clear_limite(self):
         self.limite = self.get_time()
 
-    def set_limite(self, enruta, disponibles, frecuencia):
-        self.frecuencia = int(frecuencia) * 60
-        if len(disponibles) == 0:
-            if len(enruta) == 0:
-                self.clear_limite()
-            else:
-                limite = enruta[-1][2]
-                h, m = limite.split(':')
-                limite = datetime.timedelta(seconds=(int(h) * 60 + int(m)) * 60)
-                self.limite = limite + datetime.timedelta(seconds=self.frecuencia)
-        else:
-            limite = disponibles[0][2]
-            h, m = limite.split(':')
-            self.limite = datetime.timedelta(seconds=(int(h) * 60 + int(m)) * 60)
+    def set_limite(self, limite):
+        self.limite = datetime.timedelta(seconds=(int(limite.hour) * 60 + int(limite.minute)) * 60)
         self.limite -= datetime.timedelta(0, 120)
 
     def cambiar_frecuencia(self, frecuencia):
@@ -2636,7 +2705,7 @@ class RelojInterno(gtk.EventBox):
 
 class Personal(gtk.Dialog):
 
-    def __init__(self, tipo, lista, http):
+    def __init__(self, tipo, lista, http, cambiar=False):
         super(Personal, self).__init__(flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
         ventanas = gtk.window_list_toplevels()
         parent = ventanas[0]
@@ -2644,14 +2713,15 @@ class Personal(gtk.Dialog):
             if v.is_active():
                 parent = v
                 break
-
+        self.ok_enable = cambiar
+        self.trabajador = None
         self.lista = lista
         self.http = http
         self.tipo = tipo
         self.set_modal(True)
         self.set_transient_for(parent)
         self.set_default_size(400, 400)
-        self.set_title('B\xc3\xbasqueda de Personal: %s' % tipo)
+        self.set_title('Búsqueda de Personal: %s' % tipo)
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect('delete_event', self.cerrar)
         hbox = gtk.HBox()
@@ -2677,7 +2747,7 @@ class Personal(gtk.Dialog):
         sw.set_size_request(400, 300)
         sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
         self.vbox.pack_start(sw, False, False, 0)
-        self.model = gtk.ListStore(str, str, int, gobject.TYPE_PYOBJECT)
+        self.model = gtk.ListStore(str, str, gobject.TYPE_PYOBJECT)
         self.treeview = gtk.TreeView(self.model)
         columnas = ('NOMBRE', 'DNI')
         self.treeview.connect('cursor-changed', self.cursor_changed)
@@ -2688,7 +2758,7 @@ class Personal(gtk.Dialog):
             column = gtk.TreeViewColumn(name, cell, text=i)
             self.treeview.append_column(column)
 
-        self.but_ok = Widgets.Button('aceptar.png', '_Ok')
+        self.but_ok = Widgets.Button('aceptar.png', '_Cambiar Personal')
         but_salir = Widgets.Button('cancelar.png', '_Salir')
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
@@ -2778,16 +2848,16 @@ class Personal(gtk.Dialog):
         lista = self.filtrar_nombre()
         lista = self.filtrar_dni(lista)
         self.model.clear()
-        for fila in lista:
-            self.model.append(fila)
+        for t in lista:
+            self.model.append([t.get_nombre_codigo(), t.get_dni(), t])
 
     def cursor_changed(self, *args):
         try:
             path, column = self.treeview.get_cursor()
             path = int(path[0])
             row = self.model[path]
-            self.row = row
-            self.but_ok.set_sensitive(True)
+            self.trabajador = row[2]
+            self.but_ok.set_sensitive(True and self.ok_enable)
         except:
             self.but_ok.set_sensitive(False)
 
@@ -2796,12 +2866,13 @@ class Personal(gtk.Dialog):
         self.filtrar()
         self.but_ok.set_sensitive(False)
         if self.run() == gtk.RESPONSE_OK:
-            return self.row
+            return self.trabajador
         else:
             return False
 
     def row_activated(self, *args):
-        self.but_ok.clicked()
+        if self.but_ok.get_sensitive():
+            self.but_ok.clicked()
 
     def cerrar(self, *args):
         self.destroy()
@@ -2893,38 +2964,51 @@ class Liquidaciones(gtk.Window):
         self.fecha.set_size_request(150, 30)
         vbox_main = gtk.VBox(False, 0)
         self.add(vbox_main)
-        hbox = gtk.HBox(False, 2)
+        hbox = gtk.HBox(False, 10)
         vbox_main.pack_start(hbox, False, False, 0)
-        hbox.pack_start(gtk.Label('D\xc3\xada:'), False, False, 0)
+        hbox.pack_start(gtk.Label('D\xc3\xada:'), False, False, 10)
         hbox.pack_start(self.fecha, False, False, 0)
-        self.padron = Widgets.Numero(3)
+        self.padron = Widgets.Numero(5)
         self.padron.connect('activate', self.nueva)
-        hbox.pack_start(gtk.Label('Padr\xc3\xb3n:'), False, False, 0)
-        hbox.pack_start(self.padron, False, False, 0)
-        self.but_nueva = Widgets.Button('nuevo.png', 'Nueva Liq.')
-        hbox.pack_start(self.but_nueva, False, False, 0)
-        self.but_nueva.connect('clicked', self.nueva)
-        self.but_actualizar = Widgets.Button('actualizar.png', 'Reporte Padrón')
-        hbox.pack_start(self.but_actualizar, False, False, 0)
-        self.but_actualizar.connect('clicked', self.actualizar)
-        self.but_reporte = Widgets.Button('reporte.png', 'Reporte Flota')
-        hbox.pack_start(self.but_reporte, False, False, 0)
-        self.but_reporte.connect('clicked', self.reporte)
+        hbox.pack_start(gtk.Label('Padr\xc3\xb3n:'), False, False, 2)
+        hbox.pack_start(self.padron, False, False, 2)
 
-        hbox = gtk.HBox(False, 2)
-        vbox_main.pack_start(hbox, False, False, 0)
-        self.but_anular = Widgets.Button('error.png', 'Anular')
-        hbox.pack_start(self.but_anular, False, False, 0)
-        self.but_anular.connect('clicked', self.anular)
-        self.but_imprimir = Widgets.Button('imprimir.png', 'Imprimir')
-        hbox.pack_start(self.but_imprimir, False, False, 0)
-        self.but_imprimir.connect('clicked', self.imprimir)
-        self.but_previa = Widgets.Button('buscar.png', 'Vista Previa')
-        hbox.pack_start(self.but_previa, False, False, 0)
-        self.but_previa.connect('clicked', self.previa)
-        self.but_bloquear = Widgets.Button('bloqueado.png', 'Bloquear/Desbloquear')
-        hbox.pack_start(self.but_bloquear, False, False, 0)
-        self.but_bloquear.connect('clicked', self.bloquear)
+        toolbar = Widgets.Toolbar((
+            ('Nueva Liquidación', 'nuevo.png', self.nueva),
+            ('Reporte Padrón', 'bus.png', self.actualizar),
+            ('Reporte Flota', 'reporte.png', self.nueva),
+            ('Anular Liquidación', 'delete.png', self.anular),
+            ('Imprimir Liquidación', 'imprimir.png', self.imprimir),
+            ('Vista Previa', 'buscar.png', self.previa),
+            ('Bloquear/Desbloquear', 'bloqueado.png', self.bloquear),
+            ('Distribución', 'caja_central.png', self.distribucion)
+        ))
+        hbox.pack_start(toolbar, False, False, 0)
+
+        # self.but_nueva = Widgets.Button('nuevo.png', 'Nueva Liq.')
+        # hbox.pack_start(self.but_nueva, False, False, 0)
+        # self.but_nueva.connect('clicked', self.nueva)
+        # self.but_actualizar = Widgets.Button('bus.png', 'Reporte Padrón')
+        # hbox.pack_start(self.but_actualizar, False, False, 0)
+        # self.but_actualizar.connect('clicked', self.actualizar)
+        # self.but_reporte = Widgets.Button('reporte.png', 'Reporte Flota')
+        # hbox.pack_start(self.but_reporte, False, False, 0)
+        # self.but_reporte.connect('clicked', self.reporte)
+
+        # hbox = gtk.HBox(False, 2)
+        # vbox_main.pack_start(hbox, False, False, 0)
+        # self.but_anular = Widgets.Button('error.png', 'Anular')
+        # hbox.pack_start(self.but_anular, False, False, 0)
+        # self.but_anular.connect('clicked', self.anular)
+        # self.but_imprimir = Widgets.Button('imprimir.png', 'Imprimir')
+        # hbox.pack_start(self.but_imprimir, False, False, 0)
+        # self.but_imprimir.connect('clicked', self.imprimir)
+        # self.but_previa = Widgets.Button('buscar.png', 'Vista Previa')
+        # hbox.pack_start(self.but_previa, False, False, 0)
+        # self.but_previa.connect('clicked', self.previa)
+        # self.but_bloquear = Widgets.Button('bloqueado.png', 'Bloquear/Desbloquear')
+        # hbox.pack_start(self.but_bloquear, False, False, 0)
+        # self.but_bloquear.connect('clicked', self.bloquear)
         self.dia = self.fecha.get_date()
         self.set_title('Reporte de Liquidaciones')
         sw = gtk.ScrolledWindow()
@@ -3119,6 +3203,14 @@ class Liquidaciones(gtk.Window):
         if data:
             treeiter = self.model.get_iter(path)
             self.model.remove(treeiter)
+
+    def distribucion(self, *args):
+
+        datos = {
+            'ruta': self.ruta,
+        }
+        CajaCentralizada.Produccion(self.http, datos)
+
 
 
 class Liquidar(Widgets.Window):
@@ -3970,12 +4062,19 @@ class CuadroPagos(gtk.Dialog):
         self.treeview.scroll.set_size_request(600, 300)
         self.vbox.pack_start(self.treeview)
         self.ticket = data['ticket']
+
+        adelantar = Widgets.Button('dinero.png', 'Adelantar Pago')
+        adelantar.connect('clicked', self.adelantar_pago)
+        self.action_area.pack_start(adelantar, False, False, 0)
+
         fondo = Widgets.Button('fondo.png', 'Cobrar Fondo')
         fondo.connect('clicked', self.cobrar_fondo)
         self.action_area.pack_start(fondo, False, False, 0)
+
         reporte = Widgets.Button('reporte.png', 'Reporte Fondo')
         reporte.connect('clicked', self.reporte)
         self.action_area.pack_start(reporte, False, False, 0)
+
         self.but_ok = Widgets.Button('imprimir.png', '_Imprimir')
         but_salir = Widgets.Button('cancelar.png', '_Salir')
         self.but_imprimir = Widgets.Button('imprimir.png', '_Imprimir')
@@ -3997,6 +4096,20 @@ class CuadroPagos(gtk.Dialog):
                 dialog = Widgets.Alerta_TreeView('Reporte de Fondo: %s' % row[0], 'Estado de Cuenta TOTAL: %s' % respuesta['total'], 'Fondos', ('DIA', 'TICKET', 'MONTO'), respuesta['tabla'])
                 dialog.set_default_size(400, 500)
                 dialog.iniciar()
+
+    def adelantar_pago(self, *args):
+        row = self.treeview.get_selected()
+        if row:
+            data = {
+                'clave': row[5],
+                'unidad': False,
+                'nombre': row[0],
+                'dia': self.dia,
+                'ruta': self.ruta
+            }
+            dialog = CajaCentralizada.Adelantos(self.http, data)
+            dialog.iniciar()
+            dialog.cerrar()
 
     def cobrar_fondo(self, *args):
         row = self.treeview.get_selected()
@@ -4461,7 +4574,7 @@ class BuscarBoleto(gtk.Dialog):
 
 class ReservaStock(gtk.Dialog):
 
-    def __init__(self, padron, selector, http, reservas):
+    def __init__(self, http, unidad):
         super(ReservaStock, self).__init__(flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
         ventanas = gtk.window_list_toplevels()
         parent = ventanas[0]
@@ -4471,9 +4584,7 @@ class ReservaStock(gtk.Dialog):
                 break
         self.set_modal(True)
         self.set_transient_for(parent)
-        self.padron = padron
-        self.dia, self.ruta, self.lado = selector.get_datos()
-        self.padron = padron
+        self.unidad = unidad
         self.http = http
         self.but_guardar = Widgets.Button('aceptar.png', '_Aceptar')
         self.action_area.pack_start(self.but_guardar, False, False, 0)
@@ -4485,10 +4596,10 @@ class ReservaStock(gtk.Dialog):
         self.but_guardar.set_sensitive(False)
         self.set_default_size(200, 200)
         self.set_border_width(10)
-        self.set_title('Anular Stock: PADRON %d' % self.padron)
+        self.set_title('Anular Stock: PADRON %d' % self.unidad.padron)
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect('delete_event', self.cerrar)
-        self.model = gtk.ListStore(str, str, int, str, str, str, str, str, str, bool, str, str)
+        self.model = gtk.ListStore(str, str, int, str, str, str, str, str, str, bool, gobject.TYPE_PYOBJECT)
         self.treeview = gtk.TreeView(self.model)
         columnas = ('BOLETO', 'TARIFA', 'QUEDAN', 'SERIE', 'INICIO', 'ACTUAL', 'FIN', 'HORA', 'DESPACHADOR', 'ANULAR')
         for i, columna in enumerate(columnas):
@@ -4509,14 +4620,14 @@ class ReservaStock(gtk.Dialog):
         self.vbox.pack_start(self.treeview, True, True, 0)
         hbox = gtk.HBox(False, 0)
         self.vbox.pack_start(hbox, False, False, 0)
-        label = gtk.Label('Motivo de anulaci\xc3\xb3n: (obligatorio)')
+        label = gtk.Label('Motivo de anulación: (obligatorio)')
         hbox.pack_start(label, False, False, 0)
         self.motivo = gtk.Entry(128)
         hbox.pack_start(self.motivo, True, True, 0)
         self.motivo.connect('key-release-event', self.revisar_texto)
         self.motivo.connect('activate', self.activate_motivo)
-        for r in reservas:
-            self.model.append(r)
+        for s in self.unidad.suministros:
+            self.model.append(s.get_fila_stock())
 
         self.menu = gtk.Menu()
         # item1 = gtk.MenuItem('Anular Taco')
@@ -4536,11 +4647,14 @@ class ReservaStock(gtk.Dialog):
         self.menu.append(item3)
         self.treeview.connect('button-release-event', self.on_release_button)
 
+    def get_modelo(self, path):
+        return self.model[path][len(self.model[path]) - 1]
+
     def anular_taco(self, *args):
         try:
             path, column = self.treeview.get_cursor()
             path = int(path[0])
-            stock_id = self.model[path][10]
+            stock = self.get_modelo(path)
         except:
             return
         dialogo = Widgets.Alerta_Numero('Anular Taco', 'error_numero.png', 'Indique el PRIMER boleto del taco a anular')
@@ -4783,6 +4897,8 @@ class Reporte(gtk.Window):
         self.fecha = Widgets.Fecha()
         self.fecha.set_size_request(150, 30)
         vbox_main = gtk.VBox(False, 0)
+        self.display = gtk.gdk.display_get_default()
+        self.connect('destroy', self.on_destroy)
         self.add(vbox_main)
         self.datos = {}
         self.unidad = 0
@@ -4805,21 +4921,33 @@ class Reporte(gtk.Window):
          ('Horas', 2),
          ('Frecuencia', 3)))
         self.tipo.connect('changed', self.cambiar_contenido)
-        self.controles = gtk.CheckButton('Mostrar Todos')
-        self.controles.connect('toggled', self.mostrar_controles)
-        hbox.pack_start(self.controles, False, False, 0)
-        self.but_actualizar = Widgets.Button('actualizar.png', 'Actualizar')
-        hbox.pack_start(self.but_actualizar, False, False, 0)
-        self.but_actualizar.connect('clicked', self.actualizar)
-        self.but_web = Widgets.Button('chrome.png', 'Monitoreo Web')
-        hbox.pack_start(self.but_web, False, False, 0)
-        self.but_web.connect('clicked', self.web)
-        self.but_imprimir = Widgets.Button('imprimir.png', 'Imprimir')
-        hbox.pack_start(self.but_imprimir, False, False, 0)
-        self.but_imprimir.connect('clicked', self.imprimir)
-        self.but_video = Widgets.Button('video.png', 'Video')
-        hbox.pack_start(self.but_video, False, False, 0)
-        self.but_video.connect('clicked', self.video)
+
+        toolbar = Widgets.Toolbar([])
+        self.controles = toolbar.add_toggle_button('Mostrar Todos', 'buscar.png', self.mostrar_controles)
+        toolbar.add_button('Actualizar', 'actualizar.png', self.actualizar)
+        toolbar.add_button('Monitoreo Web', 'chrome.png', self.web)
+        toolbar.add_button('Exportar a Excel', 'excel.png', self.imprimir)
+        toolbar.add_button('Ver Video', 'video.png', self.video)
+        hbox.pack_start(toolbar, False, False, 0)
+
+        # self.controles = gtk.CheckButton('Mostrar Todos')
+        # self.controles.connect('toggled', self.mostrar_controles)
+        # hbox.pack_start(self.controles, False, False, 0)
+        # self.but_actualizar = Widgets.Button('actualizar.png', 'Actualizar')
+        # hbox.pack_start(self.but_actualizar, False, False, 0)
+        # self.but_actualizar.connect('clicked', self.actualizar)
+        # self.but_web = Widgets.Button('chrome.png', 'Monitoreo Web')
+        # hbox.pack_start(self.but_web, False, False, 0)
+        # self.but_web.connect('clicked', self.web)
+        # self.but_imprimir = Widgets.Button('imprimir.png', 'Imprimir')
+        # hbox.pack_start(self.but_imprimir, False, False, 0)
+        # self.but_imprimir.connect('clicked', self.imprimir)
+        #
+        # self.but_video = Widgets.Button('video.png', 'Video')
+        # hbox.pack_start(self.but_video, False, False, 0)
+        # self.but_video.connect('clicked', self.video)
+
+
         herramientas = [('-30 min', 'skip-backward.png', self.skip_backward),
          ('x100', 'fast-backward.png', self.fast_backward),
          ('-1 seg', 'backward.png', self.backward),
@@ -4829,7 +4957,10 @@ class Reporte(gtk.Window):
          ('+30min', 'skip-forward.png', self.skip_forward),
          ('Finalizar', 'eject.png', self.eject)]
         self.toolbar = Widgets.Toolbar(herramientas)
-        vbox_main.pack_start(self.toolbar, False, False, 0)
+        hbox = gtk.HBox(False, 10)
+        vbox_main.pack_start(hbox, False, False, 0)
+        hbox.pack_start(gtk.Label('Reproducto de Video'), False, False, 10)
+        hbox.pack_start(self.toolbar, False, False, 10)
         self.dia = self.fecha.get_date()
         self.lado.set_lista((('A', 0), ('B', 1)))
         lista = self.http.datos['rutas']
@@ -4860,7 +4991,7 @@ class Reporte(gtk.Window):
         self.treeview = Widgets.TreeView(self.model)
         self.treeview.set_rubber_banding(True)
         selection = self.treeview.get_selection()
-        selection.set_mode(gtk.SELECTION_MULTIPLE)
+        # selection.set_mode(gtk.SELECTION_MULTIPLE)
         self.treeview.set_enable_search(False)
         self.treeview.set_reorderable(False)
         self.sw.add(self.treeview)
@@ -4893,6 +5024,49 @@ class Reporte(gtk.Window):
         self.ruta.set_id(ruta)
         self.lado.set_id(lado)
         self.lado.connect('changed', self.escribir_tabla)
+        self.treeview.connect('button-release-event', self.on_release_button)
+
+        self.pop = gtk.Window(gtk.WINDOW_POPUP)
+        self.eb = gtk.EventBox()
+        self.label_pop = gtk.Label()
+        self.pop.add(self.eb)
+        self.eb.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#F5F6CE'))
+        self.eb.add(self.label_pop)
+        self.pop.connect('button-press-event', self.cerrar_popup)
+
+    def cerrar_popup(self, *args):
+        self.pop.hide_all()
+
+    def on_release_button(self, treeview, event):
+        if event.button == 1:
+            x = int(event.x)
+            y = int(event.y)
+            t = event.time
+            pthinfo = treeview.get_path_at_pos(x, y)
+            if pthinfo is not None:
+                path, col, cellx, celly = pthinfo
+                treeview.grab_focus()
+                treeview.set_cursor(path, col, 0)
+                print ('HORA', self.model[path][1])
+                print ('COL', col.columna)
+                for i, c in enumerate(self.cabeceras):
+                    if c == col.columna:
+                        volada = self.tabla[path[0]][i]
+                        it = treeview.get_model().get_iter(path)
+                        try:
+                            value = 'PADRON: %s\nGEOCERCA: %s\nHORA DE LLEGADA: %s\nVOLADA: %s' % (
+                                self.model[path][1], self.geocercas[i - 1][2], volada[2], volada[0]
+                            )
+                        except:
+                            self.pop.hide_all()
+                            return
+                        self.pop.show_all()
+                        a, x, y, b = self.display.get_pointer()
+                        self.pop.move(x + 10, y + 10)
+                        self.label_pop.set_markup(str(value))
+                        return True
+            else:
+                self.pop.hide_all()
 
     def web(self, *args):
         url = '/monitoreo/mapa'
@@ -5081,31 +5255,11 @@ class Reporte(gtk.Window):
         reporte = Impresion.Excel('Reporte de Voladas', 'D\xc3\xada: %s Ruta: %s Lado: %s' % (self.fecha.get_date(), self.ruta.get_text(), self.lado.get_text()), self.cabeceras, list(self.model), self.widths)
         a = os.path.abspath(reporte.archivo)
         if os.name == 'nt':
-            com = 'cd "%s" & start reporte.xls' % a[:12]
+            com = 'cd "%s" & start reporte.xls' % a[:-12]
             print com
             os.system(com)
         else:
-            os.system('gnome-open ' + a)
-
-    def on_release_button(self, treeview, event):
-        if event.button == 3:
-            x = int(event.x)
-            y = int(event.y)
-            t = event.time
-            pthinfo = treeview.get_path_at_pos(x, y)
-            if pthinfo is not None:
-                path, col, cellx, celly = pthinfo
-                treeview.grab_focus()
-                treeview.set_cursor(path, col, 0)
-                self.menu.popup(None, None, None, event.button, t)
-                self.menu.show_all()
-            return True
-        try:
-            path, column = self.treeview.get_cursor()
-            path = int(path[0])
-            self.treeview.set_cursor(path, self.column, True)
-        except:
-            return
+            os.system('xdg-open ' + a)
 
     def refrecuenciar(self, *args):
         try:
@@ -5153,26 +5307,32 @@ class Reporte(gtk.Window):
                     self.model.append(fila)
 
     def video(self, *args):
-        selection = self.treeview.get_selection()
-        model, pathlist = selection.get_selected_rows()
-        salidas = [0] * 4
-        padrones = [0] * 4
-        for i, p in enumerate(pathlist):
-            if i > 3:
-                selection.unselect_path(p)
+        try:
+            path, column = self.treeview.get_cursor()
+            path = int(path[0])
+        except:
+            return
+        salidas = [0] * 5
+        padrones = [0] * 5
+        for i in range(5):
+            try:
+                salida, unidad, padron = self.salidas[path + i - 2]
+            except:
+                continue
             else:
-                salida, unidad, padron = self.salidas[p[0]]
-                salidas[i] = salida
-                padrones[i] = padron
+                salidas[i - 2] = salida
+                padrones[i - 2] = padron
 
-        self.www.execute_script('video(0, %d, %d, 1, %d, %d, 2, %d, %d, 3, %d, %d);' % (salidas[0],
+        self.www.execute_script('video(0, %d, %d, 1, %d, %d, 2, %d, %d, 3, %d, %d, 4, %d, %d);' % (salidas[0],
          padrones[0],
          salidas[1],
          padrones[1],
          salidas[2],
          padrones[2],
          salidas[3],
-         padrones[3]))
+         padrones[3],
+         salidas[4],
+         padrones[4]))
         self.toolbar.show_all()
 
     def play_pause(self, *args):
@@ -5209,6 +5369,9 @@ class Reporte(gtk.Window):
         self.www.execute_script('eject();')
         self.toolbar.set_imagen_label(3, 'play.png', 'Play x20')
         self.toolbar.hide_all()
+
+    def on_destroy(self, *args):
+        self.cerrar_popup()
 
 
 class Relojes(gtk.Dialog):
@@ -5445,17 +5608,24 @@ class Grifo(Widgets.Window):
     def __init__(self, http, ruta, lado):
         super(Grifo, self).__init__('Servicio de Grifo')
         if os.name == 'nt':
-            self.set_size_request(380, 300)
+            self.set_size_request(300, 250)
         else:
-            self.set_size_request(420, 350)
+            self.set_size_request(350, 300)
         self.http = http
         self.ruta = ruta
         self.lado = lado
+        hbox = gtk.HBox(True, 15)
+        self.vbox.pack_start(hbox, True, True, 15)
+        vbox = gtk.VBox(False, 15)
+        hbox.pack_start(vbox, True, True, 15)
         tabla = gtk.Table(2, 6)
-        self.vbox.pack_start(tabla)
+        vbox.pack_start(tabla, True, True, 0)
         y = 0
-        for t in ('Fecha:', 'Petroleo:', 'Al Contado:', 'Serie', 'Padr\xc3\xb3n:', 'Monto:', 'Galones:'):
-            tabla.attach(gtk.Label(t), 0, 1, y, y + 1)
+        for t in ('Fecha:', 'Petroleo:', 'Al Contado:   ', 'Serie', 'Padr\xc3\xb3n:', 'Monto:', 'Galones:'):
+            label = gtk.Label()
+            label.set_markup('<b>%s</b>' % t)
+            label.set_alignment(0, 0.5)
+            tabla.attach(label, 0, 1, y, y + 1, gtk.FILL, gtk.FILL)
             y += 1
 
         self.but_dia = Widgets.Fecha()
@@ -5464,8 +5634,9 @@ class Grifo(Widgets.Window):
         self.combo_petroleo.set_lista(self.http.grifo)
         tabla.attach(self.combo_petroleo, 1, 2, 1, 2)
         self.check_contado = gtk.CheckButton()
-        self.check_contado.set_active(self.http.getConfig('contado'))
+        self.check_contado.set_active(self.http.config.contado)
         tabla.attach(self.check_contado, 1, 2, 2, 3)
+        self.check_contado.connect('toggled', self.checked_contado)
         self.combo_serie = Widgets.ComboBox()
         self.combo_serie.set_lista(self.http.seriacion['facturas'])
         tabla.attach(self.combo_serie, 1, 2, 3, 4)
@@ -5482,7 +5653,12 @@ class Grifo(Widgets.Window):
         self.but_imprimir = self.crear_boton('guardar.png', '_Guardar', self.guardar)
         self.entry_monto.connect('key-release-event', self.calcular_galones)
         self.show_all()
+        self.checked_contado()
         self.set_focus(self.entry_padron)
+
+    def checked_contado(self, *args):
+        activo = self.check_contado.get_active()
+        self.combo_serie.set_sensitive(activo)
 
     def ventas(self, *args):
         dia = self.but_dia.get_date()
@@ -5499,21 +5675,31 @@ class Grifo(Widgets.Window):
         dia = self.but_dia.get_date()
         petroleo = self.combo_petroleo.get_id()
         precio = self.combo_petroleo.get_item()[2]
-        dialogo = Widgets.Alerta_Numero('Generar Reporte', 'dinero.png', 'Escriba el N\xc3\xbamero de Registro para el d\xc3\xada\n%s' % dia, 12, True)
-        registro = dialogo.iniciar()
+        dialogo = Widgets.Alerta_Numero('Registrar Precio', 'dinero.png',
+                                        'Escriba el precio actual', 4, True)
+        precio = dialogo.iniciar()
         dialogo.cerrar()
-        if registro:
-            datos = {'dia': dia,
-             'registro': registro,
-             'petroleo': petroleo,
-             'precio': precio}
-            if self.http.load('previa-grifo', datos):
-                dialogo = Widgets.Alerta_SINO('Confirmar Reporte', 'imprimir.png', 'Confirme si desea guardar el reporte:')
-                if dialogo.iniciar():
-                    lista = self.http.load('reporte-grifo', datos)
-                    if lista:
-                        VentasGrifo(self, lista)
+        try:
+            float(precio)
+        except:
+            Widgets.Alerta('Error', 'error.png', 'Precio inválido')
+        else:
+            if precio:
+                dialogo = Widgets.Alerta_Numero('Registrar contómetro', 'grifo.png',
+                                                'Escriba el número que registra actualmente', 12, True)
+                registro = dialogo.iniciar()
                 dialogo.cerrar()
+                if registro:
+                    datos = {'json': json.dumps({
+                        'registro': registro,
+                        'petroleo': petroleo,
+                        'precio': int(float(precio) * 100)
+                    })}
+                    respuesta = self.http.load('guardar-contometro', datos)
+                    if respuesta:
+                        Widgets.Alerta('Contómetro Guardado', 'ok.png', 'Registro guardado correctamente')
+                        self.http.grifo = respuesta['grifo']
+                        self.cerrar()
 
     def calcular_galones(self, *args):
         precio = self.combo_petroleo.get_item()[2]
@@ -5550,22 +5736,28 @@ class Grifo(Widgets.Window):
          tipo)
         dialogo = Widgets.Alerta_SINO('Confirmaci\xc3\xb3n', 'imprimir.png', '\xc2\xbfEst\xc3\xa1 seguro de Imprimir este recibo?' + recibo)
         if dialogo.iniciar():
-            datos = {'ruta_id': self.ruta,
-             'lado': self.lado,
-             'dia': self.but_dia.get_date(),
-             'padron': padron,
-             'petroleo': self.combo_petroleo.get_id(),
-             'monto': precio,
-             'galones': galones,
-             'serie': self.combo_serie.get_id(),
-             'contado': int(self.check_contado.get_active())}
+            datos = {
+                'ruta_id': self.ruta,
+                'lado': self.lado,
+                'dia': self.but_dia.get_date(),
+                'padron': padron,
+                'petroleo': self.combo_petroleo.get_id(),
+                'monto': precio,
+                'galones': galones,
+                'precio': self.combo_petroleo.get_item()[2],
+                'serie': self.combo_serie.get_id(),
+                'contado': int(self.check_contado.get_active())
+            }
             response = self.http.load('orden-petroleo', datos)
             if response:
                 self.entry_padron.set_text('')
                 self.entry_monto.set_text('')
                 self.entry_galones.set_text('')
+                self.set_focus(self.entry_padron)
         dialogo.cerrar()
-        self.http.setConfig('contado', self.check_contado.get_active())
+        self.http.config.contado = self.check_contado.get_active()
+        self.http.config.save()
+
 
     def deudas(self, *args):
         padron = self.entry_padron.get_text()
@@ -6675,6 +6867,7 @@ class Servicio(gtk.Dialog):
         self.destroy()
 
 
+
 class Deudas(gtk.Dialog):
 
     def __init__(self, parent, lista, padron, dia):
@@ -6710,7 +6903,7 @@ class Deudas(gtk.Dialog):
             tvcolumn.encabezado()
 
         for l in lista:
-            self.model.append((l['dia'], l['nombre'], l['saldo'], l))
+            self.model.append((l['dia'], l['detalle'], Widgets.currency(l['total']), l))
 
         but_prestamo = Widgets.Button('credito.png', '_Nuevo Pr\xc3\xa9stamo')
         but_prestamo.connect('clicked', self.prestamo)
@@ -6935,7 +7128,7 @@ class PagarDeuda(gtk.Dialog):
 
 class Stock(gtk.Dialog):
 
-    def __init__(self, padron, selector, http, boletos):
+    def __init__(self, http, unidad):
         super(Stock, self).__init__(flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
         ventanas = gtk.window_list_toplevels()
         parent = ventanas[0]
@@ -6946,19 +7139,20 @@ class Stock(gtk.Dialog):
 
         self.set_modal(True)
         self.set_transient_for(parent)
-        self.padron = padron
+        self.unidad = unidad
         self.http = http
-        self.dia, self.ruta, self.lado = selector.get_datos()
-        self.set_default_size(200, 200)
+        self.set_default_size(400, 200)
         self.set_border_width(10)
-        self.set_title('Asignar Stock: PADRON %d' % self.padron)
+        self.set_title('Asignar Stock: PADRON %d' % self.unidad.padron)
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect('delete_event', self.cerrar)
-        n = len(boletos)
+        faltan = self.unidad.get_falta_stock()
+        n = len(faltan)
         self.series = [None] * n
         self.inicios = [None] * n
-        self.finales = [None] * n
-        self.ids = [None] * n
+        self.tacos = [None] * n
+        self.boleto = [None] * n
+        self.stock = [None] * n
         self.checks = [None] * n
         tabla = gtk.Table()
         self.vbox.pack_start(tabla, False, False, 0)
@@ -6966,49 +7160,70 @@ class Stock(gtk.Dialog):
         label.set_markup('<b>BOLETO</b>')
         tabla.attach(label, 0, 1, 0, 1)
         label = gtk.Label()
-        label.set_markup('<b>TARIFA</b>')
+        label.set_markup('<b>QUEDAN</b>')
         tabla.attach(label, 1, 2, 0, 1)
         label = gtk.Label()
-        label.set_markup('<b>SERIE</b>')
+        label.set_markup('<b>TARIFA</b>')
         tabla.attach(label, 2, 3, 0, 1)
         label = gtk.Label()
-        label.set_markup('<b>INICIO</b>')
+        label.set_markup('<b>SERIE</b>')
         tabla.attach(label, 3, 4, 0, 1)
         label = gtk.Label()
-        label.set_markup('<b>TACOS</b>')
+        label.set_markup('<b>INICIO</b>')
         tabla.attach(label, 4, 5, 0, 1)
         label = gtk.Label()
-        label.set_markup('<b>ENTREGAR</b>')
+        label.set_markup('<b>TACOS</b>')
         tabla.attach(label, 5, 6, 0, 1)
-        for i, boleto in enumerate(boletos):
-            self.ids[i] = boleto[0]
-            if boleto[3]:
+        label = gtk.Label()
+        label.set_markup('<b>ENTREGAR</b>')
+        tabla.attach(label, 6, 7, 0, 1)
+        for i, boleto in enumerate(faltan):
+            stock = boleto['boleto'].get_stock()
+            if boleto['obligatorio']:
                 color = '#FFCCCC'
             else:
                 color = '#CCFFCC'
+            self.boleto[i] = boleto['boleto']
+            self.stock[i] = stock
             hbox = gtk.HBox()
+
             label = gtk.Label()
-            label.set_markup('<b>%s</b>' % boleto[1][:7])
+            label.set_markup('<b>%s</b>' % boleto['boleto'].nombre[:10])
+            label.set_alignment(0, 0.5)
             tabla.attach(label, 0, 1, i + 1, i + 2)
-            tabla.attach(gtk.Label(boleto[2]), 1, 2, i + 1, i + 2)
+
+            label = gtk.Label()
+            label.set_markup(str(boleto['cantidad']))
+            tabla.attach(label, 1, 2, i + 1, i + 2)
+
+            label = gtk.Label()
+            label.set_markup('<b>%s</b>' % boleto['boleto'].get_tarifa())
+            label.set_alignment(0, 0.5)
+            tabla.attach(label, 2, 3, i + 1, i + 2)
             self.vbox.pack_start(hbox, True, True, 0)
             entry = Widgets.Texto(3)
-            entry.set_text(boleto[4])
-            entry.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse(color))
-            tabla.attach(entry, 2, 3, i + 1, i + 2)
-            self.series[i] = entry
-            entry = Widgets.Numero(6)
-            entry.set_text(str(boleto[5]))
+            if stock:
+                entry.set_text(stock.serie)
+            else:
+                entry.set_text('A1')
             entry.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse(color))
             tabla.attach(entry, 3, 4, i + 1, i + 2)
+            self.series[i] = entry
+            entry = Widgets.Numero(6)
+            if stock:
+                entry.set_text(str(stock.actual))
+            else:
+                entry.set_text('1')
+            entry.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse(color))
+            tabla.attach(entry, 4, 5, i + 1, i + 2)
             self.inicios[i] = entry
             entry = Widgets.Numero(6)
             entry.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse(color))
-            tabla.attach(entry, 4, 5, i + 1, i + 2)
-            self.finales[i] = entry
-            entry.set_text(str(boleto[6]))
+            tabla.attach(entry, 5, 6, i + 1, i + 2)
+            self.tacos[i] = entry
+            entry.set_text(str(boleto['boleto'].tacos))
             check = gtk.CheckButton()
-            tabla.attach(check, 5, 6, i + 1, i + 2)
+            tabla.attach(check, 6, 7, i + 1, i + 2)
             self.checks[i] = check
             check.set_active(False)
 
@@ -7025,33 +7240,37 @@ class Stock(gtk.Dialog):
             pass
 
     def comprobar(self, widget):
-        serie = []
-        inicio = []
-        fin = []
-        ids = []
-        for i, d in enumerate(self.ids):
+        suministros = []
+        for i, d in enumerate(self.boleto):
             if self.checks[i].get_active():
-                serie.append(self.series[i].get_text())
-                inicio.append(self.inicios[i].get_text())
-                fin.append(self.finales[i].get_text())
-                ids.append(self.ids[i])
-        bg = self.http.datos['boleto_gasto']
-        print 'BOLETO GASTO', bg, str(self.ruta), type(bg)
-        if str(self.ruta) in bg:
-            gasto = bg[str(self.ruta)]
-        else:
-            gasto = None
-        datos = {'id': json.dumps(ids),
-         'serie': json.dumps(serie),
-         'inicio': json.dumps(inicio),
-         'taco': json.dumps(fin),
-         'padron': self.padron,
-         'ruta_id': self.ruta,
-         'dia': self.dia,
-         'lado': self.lado,
-         'boleto_gasto': gasto}
-        self.respuesta = self.http.load('asignar-stock', datos)
-        if self.respuesta:
+                if self.stock[i]:
+                    stock = self.stock[i].id
+                else:
+                    stock = None
+                suministros.append({
+                    'serie': self.series[i].get_text(),
+                    'inicio': int(self.inicios[i].get_text()),
+                    'tacos': int(self.tacos[i].get_text()),
+                    'boleto': self.boleto[i].id,
+                    'ruta': self.boleto[i].ruta,
+                    'stock': stock
+                })
+        datos = {
+            'suministros': json.dumps(suministros),
+            'unidad': self.unidad.id
+        }
+        respuesta = self.http.load('asignar-stock', datos)
+        if respuesta:
+            self.unidad.add_suministros(respuesta['suministros'])
+            # bg = self.http.get_configuracion('boleto_gasto')
+            # if bg:
+            #     datos = {
+            #         'suministros': json.dumps(suministros),
+            #         'unidad': self.unidad.id,
+            #         'propietario': self.unidad.get_propietario().nombre
+            #     }
+            #     respuesta = self.http.load('asignar-stock', datos)
+            #     self.http.ticket(respuesta['ticket'])
             self.but_ok.clicked()
 
     def iniciar(self):
@@ -7217,7 +7436,7 @@ class Fondo(gtk.Dialog):
         hb.pack_start(self.entry_nombre, False, False, 0)
         self.entry_nombre.set_sensitive(False)
 
-        self.multas = self.http.getMultas()
+        self.multas = self.http.get_multas()
         self.fondos = self.http.fondos
 
         frame = Widgets.Frame('Tipo de Cuenta')
@@ -8842,6 +9061,227 @@ class ReporteCobro(gtk.Window):
         self.destroy()
 
 
+class Arqueo(gtk.Window):
+
+    def __init__(self, http, padre):
+        super(Arqueo, self).__init__(gtk.WINDOW_TOPLEVEL)
+        self.http = http
+        self.set_size_request(400, 520)
+        self.ruta = padre.ruta
+        self.lado = padre.lado
+        vbox_main = gtk.VBox(False, 0)
+        self.add(vbox_main)
+        frame = Widgets.Frame('Billetes')
+        vbox_main.pack_start(frame, False, False, 10)
+        tabla = gtk.Table(3, 5)
+        frame.add(tabla)
+
+        label = gtk.Label('S/ 200.00')
+        tabla.attach(label, 0, 1, 0, 1)
+        self.entry_doscientos = Widgets.Numero(3)
+        tabla.attach(self.entry_doscientos, 1, 2, 0, 1)
+        self.suma_doscientos = gtk.Label()
+        tabla.attach(self.suma_doscientos, 2, 3, 0, 1)
+
+        label = gtk.Label('S/ 100.00')
+        tabla.attach(label, 0, 1, 1, 2)
+        self.entry_cien = Widgets.Numero(3)
+        tabla.attach(self.entry_cien, 1, 2, 1, 2)
+        self.suma_cien = gtk.Label()
+        tabla.attach(self.suma_cien, 2, 3, 1, 2)
+
+        label = gtk.Label('S/ 50.00')
+        tabla.attach(label, 0, 1, 2, 3)
+        self.entry_cincuenta = Widgets.Numero(3)
+        tabla.attach(self.entry_cincuenta, 1, 2, 2, 3)
+        self.suma_cincuenta = gtk.Label()
+        tabla.attach(self.suma_cincuenta, 2, 3, 2, 3)
+
+        label = gtk.Label('S/ 20.00')
+        tabla.attach(label, 0, 1, 3, 4)
+        self.entry_veinte = Widgets.Numero(3)
+        tabla.attach(self.entry_veinte, 1, 2, 3, 4)
+        self.suma_veinte = gtk.Label()
+        tabla.attach(self.suma_veinte, 2, 3, 3, 4)
+
+        label = gtk.Label('S/ 10.00')
+        tabla.attach(label, 0, 1, 4, 5)
+        self.entry_diez = Widgets.Numero(3)
+        tabla.attach(self.entry_diez, 1, 2, 4, 5)
+        self.suma_diez = gtk.Label()
+        tabla.attach(self.suma_diez, 2, 3, 4, 5)
+
+        frame = Widgets.Frame('Monedas')
+        vbox_main.pack_start(frame, False, False, 10)
+        tabla = gtk.Table(3, 6)
+        frame.add(tabla)
+
+        label = gtk.Label('S/ 5.00')
+        tabla.attach(label, 0, 1, 0, 1)
+        self.entry_cinco = Widgets.Numero(3)
+        tabla.attach(self.entry_cinco, 1, 2, 0, 1)
+        self.suma_cinco = gtk.Label()
+        tabla.attach(self.suma_cinco, 2, 3, 0, 1)
+
+        label = gtk.Label('S/ 2.00')
+        tabla.attach(label, 0, 1, 1, 2)
+        self.entry_dos = Widgets.Numero(3)
+        tabla.attach(self.entry_dos, 1, 2, 1, 2)
+        self.suma_dos = gtk.Label()
+        tabla.attach(self.suma_dos, 2, 3, 1, 2)
+
+        label = gtk.Label('S/ 1.00')
+        tabla.attach(label, 0, 1, 2, 3)
+        self.entry_uno = Widgets.Numero(3)
+        tabla.attach(self.entry_uno, 1, 2, 2, 3)
+        self.suma_uno = gtk.Label()
+        tabla.attach(self.suma_uno, 2, 3, 2, 3)
+
+        label = gtk.Label('S/ 0.50')
+        tabla.attach(label, 0, 1, 3, 4)
+        self.entry_cincu = Widgets.Numero(3)
+        tabla.attach(self.entry_cincu, 1, 2, 3, 4)
+        self.suma_cincu = gtk.Label()
+        tabla.attach(self.suma_cincu, 2, 3, 3, 4)
+
+        label = gtk.Label('S/ 0.20')
+        tabla.attach(label, 0, 1, 4, 5)
+        self.entry_vein = Widgets.Numero(3)
+        tabla.attach(self.entry_vein, 1, 2, 4, 5)
+        self.suma_vein = gtk.Label()
+        tabla.attach(self.suma_vein, 2, 3, 4, 5)
+
+        label = gtk.Label('S/ 0.10')
+        tabla.attach(label, 0, 1, 5, 6)
+        self.entry_die = Widgets.Numero(3)
+        tabla.attach(self.entry_die, 1, 2, 5, 6)
+        self.suma_die = gtk.Label()
+        tabla.attach(self.suma_die, 2, 3, 5, 6)
+
+        frame = Widgets.Frame('SUMA')
+        vbox_main.pack_start(frame, False, False, 10)
+        tabla = gtk.Table(3, 5)
+        frame.add(tabla)
+
+        label = gtk.Label('Billetes')
+        tabla.attach(label, 0, 1, 0, 1)
+        self.suma_billetes = gtk.Label()
+        tabla.attach(self.suma_billetes, 2, 3, 0, 1)
+
+        label = gtk.Label('Monedas')
+        tabla.attach(label, 0, 1, 1, 2)
+        self.suma_monedas = gtk.Label()
+        tabla.attach(self.suma_monedas, 2, 3, 1, 2)
+
+        label = gtk.Label('TOTAL')
+        tabla.attach(label, 0, 1, 2, 3)
+        self.suma_total = gtk.Label()
+        tabla.attach(self.suma_total, 2, 3, 2, 3)
+
+        hbox = gtk.HBox(False, 10)
+        vbox_main.pack_start(hbox, False, False, 10)
+
+        self.button_cancelar = Widgets.Button('cancelar.png', 'Cancelar')
+        hbox.pack_end(self.button_cancelar, False, False, 10)
+        self.button_cancelar.connect('activate', self.cerrar)
+
+        self.button_calcular = Widgets.Button('imprimir.png', 'Imprimir')
+        hbox.pack_end(self.button_calcular, False, False, 10)
+        self.button_calcular.connect('clicked', self.imprimir)
+
+        self.entry_doscientos.connect('key-release-event', self.calcular)
+        self.entry_cien.connect('key-release-event', self.calcular)
+        self.entry_cincuenta.connect('key-release-event', self.calcular)
+        self.entry_veinte.connect('key-release-event', self.calcular)
+        self.entry_diez.connect('key-release-event', self.calcular)
+        self.entry_cinco.connect('key-release-event', self.calcular)
+        self.entry_dos.connect('key-release-event', self.calcular)
+        self.entry_uno.connect('key-release-event', self.calcular)
+        self.entry_cincu.connect('key-release-event', self.calcular)
+        self.entry_vein.connect('key-release-event', self.calcular)
+        self.entry_die.connect('key-release-event', self.calcular)
+
+        self.entry_doscientos.grab_focus()
+
+        self.show_all()
+
+    def calcular(self, *args):
+        doscientos = self.entry_doscientos.get_int()
+        suma_doscientos = doscientos * 200
+        self.suma_doscientos.set_text(str(suma_doscientos))
+        cien = self.entry_cien.get_int()
+        suma_cien = cien * 100
+        self.suma_cien.set_text(str(suma_cien))
+        cincuenta = self.entry_cincuenta.get_int()
+        suma_cincuenta = cincuenta * 50
+        self.suma_cincuenta.set_text(str(suma_cincuenta))
+        veinte = self.entry_veinte.get_int()
+        suma_veinte = veinte * 20
+        self.suma_veinte.set_text(str(suma_veinte))
+        diez = self.entry_diez.get_int()
+        suma_diez = diez * 10
+        self.suma_diez.set_text(str(suma_diez))
+        cinco = self.entry_cinco.get_int()
+        suma_cinco = cinco * 5
+        self.suma_cinco.set_text(str(suma_cinco))
+        dos = self.entry_dos.get_int()
+        suma_dos = dos * 2
+        self.suma_dos.set_text(str(suma_dos))
+        uno = self.entry_uno.get_int()
+        suma_uno = uno * 1
+        self.suma_uno.set_text(str(suma_uno))
+        cincu = self.entry_cincu.get_int()
+        suma_cincu = cincu * 0.5
+        self.suma_cincu.set_text(str(suma_cincu))
+        vein = self.entry_vein.get_int()
+        suma_vein = vein * 0.2
+        self.suma_vein.set_text(str(suma_vein))
+        die = self.entry_die.get_int()
+        suma_die = die * 0.1
+        self.suma_die.set_text(str(suma_die))
+
+        suma_billetes = suma_doscientos + suma_cien + suma_cincuenta + suma_veinte + suma_diez
+        self.suma_billetes.set_text(str(suma_billetes))
+        suma_monedas = suma_cinco + suma_dos + suma_uno + suma_cincu + suma_vein + suma_die
+        self.suma_monedas.set_text(str(suma_monedas))
+        suma_total = suma_billetes + suma_monedas
+        self.suma_total.set_text(str(suma_total))
+
+        billetes = [
+            {'valor': '200', 'cantidad': doscientos, 'total': suma_doscientos},
+            {'valor': '100', 'cantidad': cien, 'total': suma_cien},
+            {'valor': ' 50', 'cantidad': cincuenta, 'total': suma_cincuenta},
+            {'valor': ' 20', 'cantidad': veinte, 'total': suma_veinte},
+            {'valor': ' 10', 'cantidad': diez, 'total': suma_diez},
+            {'valor': '  5', 'cantidad': cinco, 'total': suma_cinco},
+            {'valor': '  2', 'cantidad': dos, 'total': suma_dos},
+            {'valor': '  1', 'cantidad': uno, 'total': suma_uno},
+            {'valor': '0.5', 'cantidad': cincu, 'total': suma_cincu},
+            {'valor': '0.2', 'cantidad': vein, 'total': suma_vein},
+            {'valor': '0.1', 'cantidad': die, 'total': suma_die},
+            {'suma': 'BILLETES', 'total': suma_billetes},
+            {'suma': 'MONEDAS', 'total': suma_monedas},
+            {'suma': 'TOTAL', 'total': suma_total}
+        ]
+
+        return billetes
+
+    def imprimir(self, *args):
+
+        billetes = self.calcular()
+
+        datos = {
+            'json': json.dumps({'billetes': billetes}),
+            'ruta_id': self.ruta,
+            'lado': self.lado,
+        }
+        data = self.http.load('arqueo-caja', datos)
+        if data:
+            self.cerrar()
+
+    def cerrar(self, *args):
+        self.destroy()
+
 class MiCaja(gtk.Window):
 
     def __init__(self, http, padre):
@@ -8851,6 +9291,8 @@ class MiCaja(gtk.Window):
         self.add(vbox_main)
         self.padre = padre
         self.dia = padre.dia
+        self.ruta = padre.ruta
+        self.lado = padre.lado
         hbox = gtk.HBox(False, 2)
         vbox_main.pack_start(hbox, False, False, 0)
         self.but_gasto = Widgets.Button('dinero.png', 'Reg. Gasto')
@@ -8865,6 +9307,9 @@ class MiCaja(gtk.Window):
         self.but_reporte = Widgets.Button('reporte.png', 'Por Concepto')
         hbox.pack_start(self.but_reporte, False, False, 0)
         self.but_reporte.connect('clicked', self.reporte)
+        self.but_arqueo = Widgets.Button('arqueo.png', 'Arqueo de Caja')
+        hbox.pack_start(self.but_arqueo, False, False, 0)
+        self.but_arqueo.connect('clicked', self.arqueo)
 
         hbox = gtk.HBox(False, 2)
         vbox_main.pack_start(hbox, False, False, 0)
@@ -8883,16 +9328,13 @@ class MiCaja(gtk.Window):
         self.set_title('Reporte de Caja: ' + self.http.despachador)
         sw = gtk.ScrolledWindow()
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        if os.name == 'nt':
-            sw.set_size_request(720, 540)
-        else:
-            sw.set_size_request(800, 600)
-        self.model = gtk.ListStore(str, str, str)
-        self.treeview = Widgets.TreeView(self.model)
-        self.treeview.set_rubber_banding(True)
-        selection = self.treeview.get_selection()
-        self.treeview.set_enable_search(False)
-        self.treeview.set_reorderable(False)
+        sw.set_size_request(1000, 540)
+
+        columnas = ('CONCEPTO', 'TICKETS', 'MONTO')
+        self.treeview = Widgets.TreeViewId('Reporte', columnas)
+        self.treeview.treeview.set_rubber_banding(True)
+        self.treeview.treeview.set_enable_search(False)
+        self.treeview.treeview.set_reorderable(False)
         vbox_main.pack_start(sw, True, True, 0)
         sw.add(self.treeview)
         self.show_all()
@@ -8901,79 +9343,198 @@ class MiCaja(gtk.Window):
     def reporte(self, *args):
         ReporteCobro(self.http, self)
 
+    def arqueo(self, *args):
+        Arqueo(self.http, self)
+
     def anular(self, *args):
         try:
-            path, column = self.treeview.get_cursor()
+            path, column = self.treeview.treeview.get_cursor()
             path = int(path[0])
-            row = self.model[path]
-            i = row[3]
+            model = self.treeview.treeview.get_model()
+            row = model[path]
+            i = row[len(row) - 1]
         except:
             return
-        if i.isdigit():
-            dialogo = Widgets.Alerta_SINO_Clave('Anular Cobro', 'warning.png', 'Confirme que desea anular el cobro de %s por S/. %s' % (row[0], row[2]))
+        if i and 'tipoTicket' in i:
+            dialogo = Widgets.Alerta_SINO_Clave('Anular Cobro', 'warning.png', 'Confirme que desea anular el cobro de %s por %s' % (row[2], row[6]))
             if dialogo.iniciar():
+                if i['tipoTicket'] == 'cobranza':
+                    movimiento = '*'
+                elif i['tipoTicket'] == 'pago':
+                    movimiento = '-'
+                elif i['tipoTicket'] == 'credito':
+                    movimiento = ''
                 clave = dialogo.clave
-                datos = {'movimiento': int(self.model[path][1] == '-'),
-                 'voucher_id': i,
+                datos = {'movimiento': movimiento,
+                 'voucher_id': i['id'],
                  'ruta_id': self.padre.ruta,
                  'lado': self.padre.lado,
                  'dia': self.dia,
-                 'monto': row[2],
+                 'monto': row[6],
                  'usuario': self.http.despachador,
-                 'detalle': row[0],
-                 'padron': row[1],
+                 'detalle': row[2],
+                 'padron': row[3],
                  'hora': '',
                  'clave': clave,
                 }
+                print('anular-pago-nuevo', datos)
                 data = self.http.load('anular-pago', datos)
                 if data:
-                    ultimo = self.model[len(self.model) - 1]
-                    ultimo[2] = str(Decimal(ultimo[2]) - Decimal(self.model[path][2]))
-                    self.model[path][2] = 'ANULADO'
+                    model[len(model) - 1][6] = ''
+                    model[len(model) - 2][6] = ''
+                    model[len(model) - 3][6] = ''
+                    model[len(model) - 4][6] = ''
+                    model[path][6] = 'ANULADO'
             dialogo.cerrar()
 
     def reimprimir(self, *args):
         try:
-            path, column = self.treeview.get_cursor()
+            path, column = self.treeview.treeview.get_cursor()
             path = int(path[0])
-            row = self.model[path]
-            i = row[3]
+            model = self.treeview.treeview.get_model()
+            row = model[path]
+            i = row[len(row) - 1]
         except:
             return
-        if i.isdigit():
-            datos = {'movimiento': int(self.model[path][1] == '-'),
-             'voucher_id': i,
-             'ruta_id': self.padre.ruta,
-             'lado': self.padre.lado}
+        if i and 'tipoTicket' in i:
+            if i['tipoTicket'] == 'cobranza':
+                movimiento = '*'
+            elif i['tipoTicket'] == 'pago':
+                movimiento = '-'
+            elif i['tipoTicket'] == 'credito':
+                movimiento = ''
+            datos = {
+                'movimiento': movimiento,
+                 'voucher_id': i['id'],
+                 'ruta_id': self.padre.ruta,
+                 'lado': self.padre.lado
+            }
             self.http.load('reimprimir-pago', datos)
 
     def actualizar(self, widget, resumen):
         self.resumen = resumen
-        data = self.http.load('reporte-caja', {'imprimir': False,
-         'resumen': resumen})
-        if data:
-            lista = data['liststore']
-            liststore = []
-            for l in lista:
-                liststore.append(eval(l))
+        if resumen:
+            self.resumen = resumen
+            data = self.http.load('reporte-caja', {'imprimir': False,
+             'resumen': True})
+            if data:
+                self.treeview.set_columnas_only(data['columnas'])
+                self.treeview.escribir(data['lista'])
+        else:
+            data = self.http.load('reporte-caja-api', {'imprimir': False})
+            if data:
+                columnas = ('HORA', 'NUMERO', 'NOMBRE', 'PADRON', 'CODIGO', 'CLIENTE', 'MONTO')
+                self.treeview.set_columnas_object(columnas)
+                lista = []
+                total_soles = 0
+                total_dolares = 0
+                creditos_soles = 0
+                creditos_dolares = 0
+                for q in data['cobranzas']:
+                    q['tipoTicket'] = 'cobranza'
+                    if q['anulado']:
+                        lista.append([q['hora'],
+                                      ('%0*d - %0*d' % (3, q['serie'], 7, q['numero'])),
+                                      q['nombre'],
+                                      q['padron'] if q['unidad'] else ' ',
+                                      '',
+                                      q['propietario'],
+                                      'ANULADO',
+                                      q])
+                    else:
+                        if q['sol']:
+                            total_soles += q['total']
+                            moneda = 'S/'
+                        else:
+                            total_dolares += q['total']
+                            moenda = '$'
+                        lista.append((q['hora'],
+                                      '%0*d - %0*d' % (3, q['serie'], 7, q['numero']),
+                                      q['nombre'],
+                                      q['padron'] if q['unidad'] else ' ',
+                                      '',
+                                      q['propietario'],
+                                      ('%s %s' % (moneda, q['total'])),
+                                      q))
 
-            self.model = gtk.ListStore(*liststore)
-            cols = self.treeview.get_columns()
-            for c in cols:
-                self.treeview.remove_column(c)
+                for q in data['pagos']:
+                    q['tipoTicket'] = 'pago'
+                    if q['anulado']:
+                        lista.append((
+                            q['hora'],
+                            str(q['numero']).zfill(7),
+                            q['nombre'],
+                            '-', '', '', 'ANULADO', q))
+                    else:
+                        if q['sol']:
+                            total_soles -= q['total']
+                            moneda = 'S/'
+                        else:
+                            total_dolares -= q['total']
+                            moneda = '$'
+                        lista.append((
+                            q['hora'],
+                            str(q['numero']).zfill(7),
+                            q['nombre'], '-', '', '',
+                            ('S/ -%s' % q['total']),
+                            q))
+                for c in data['creditos']:
+                    c['tipoTicket'] = 'credito'
+                    if c['cliente'][:3] == 'PAD':
+                        n = c['cliente'].find('(')
+                        codigo = c['cliente'][4:n - 1]
+                        m = c['cliente'].find(')')
+                        referencia = c['cliente'][n + 1:m]
+                        cliente = c['cliente'][m + 2:]
+                    else:
+                        n = c['cliente'].find(' ')
+                        referencia = c['cliente'][:n]
+                        m = c['cliente'].find('(')
+                        codigo = c['cliente'][m + 1: -1]
+                        cliente = c['cliente'][n + 1:m]
+                    if c['anulado']:
+                        lista.append((c['dia'] + ' ' + c['hora'], str(c['numero']).zfill(6), c['detalle'], codigo,
+                                      referencia, cliente, 'ANULADO', ''))
+                    else:
+                        if c['moneda']:
+                            creditos_soles += c['inicial'] / 100.
+                            moneda = 'S/'
+                        else:
+                            creditos_dolares += c['inicial'] / 100.
+                            moneda = '$'
+                        lista.append((c['dia'] + ' ' + c['hora'], str(c['numero']).zfill(6), c['detalle'], codigo,
+                                      referencia, cliente, ('%s %s' % (moneda, c['inicial'] / 100.)), c))
 
-            columnas = data['columnas']
-            self.treeview.set_model(self.model)
-            for i, columna in enumerate(columnas):
-                cell_text = gtk.CellRendererText()
-                tvcolumn = Widgets.TreeViewColumn(columna)
-                tvcolumn.pack_start(cell_text, True)
-                tvcolumn.set_attributes(cell_text, markup=i)
-                self.treeview.append_column(tvcolumn)
-                tvcolumn.encabezado()
-
-            for l in data['lista']:
-                self.model.append(l)
+                for q in data['adelantos']:
+                    q['tipoTicket'] = 'adelanto'
+                    if q['anulado']:
+                        lista.append((
+                            q['hora'],
+                            str(q['numero']).zfill(7),
+                            q['concepto'],
+                            '-', '', q['nombre'], 'ANULADO', q))
+                    else:
+                        total_soles += q['monto'] / 100.
+                        moneda = 'S/'
+                        if q['unidad']:
+                            lista.append((
+                                q['hora'],
+                                str(q['numero']).zfill(7),
+                                q['concepto'], q['nombre'], '', '',
+                                ('S/ %s' % (q['monto'] / 100.)),
+                                q))
+                        else:
+                            lista.append((
+                                q['hora'],
+                                str(q['numero']).zfill(7),
+                                q['concepto'], '-', '', q['nombre'],
+                                ('S/ %s' % (q['monto'] / 100.)),
+                                q))
+                lista.append(['', 'TOTAL', 'CREDITO SOLES', '', '', '', 'S/ %s' % creditos_soles, None])
+                lista.append(['', 'TOTAL', 'CREDITO DOLARES', '', '', '', '$ %s' % creditos_dolares, None])
+                lista.append(['', 'TOTAL', 'EFECTIVO SOLES', '', '', '', 'S/ %s' % total_soles, None])
+                lista.append(['', 'TOTAL', 'EFECTIVO DOLARES', '', '', '', '$ %s' % total_dolares, None])
+                self.treeview.escribir(lista)
 
     def imprimir(self, *args):
         data = self.http.load('reporte-caja', {'imprimir': True,
@@ -8996,17 +9557,17 @@ class MiCaja(gtk.Window):
         if dialogo.iniciar():
             datos = dialogo.datos
             data = self.http.load('registrar-gasto', datos)
+            model = self.treeview.treeview.get_model()
             if data:
-                n = len(self.model)
+                ultimo = model[len(model) - 1]
+                penultimo = model[len(model) - 2]
                 try:
-                    self.model.insert(n - 1, (datos['concepto'],
-                     '-',
-                     '-' + datos['monto'],
-                     data))
+                    ultimo[2] = ''
+                    penultimo[2] = ''
+                    ultimo[5] = ''
+                    penultimo[5] = ''
                 except:
-                    self.model[n - 1][2] = str(Decimal(self.model[n - 1][2]) - Decimal(datos['monto']))
-                else:
-                    self.model[n][2] = str(Decimal(self.model[n][2]) - Decimal(datos['monto']))
+                    print('no estamos en detalle')
 
         dialogo.cerrar()
 
@@ -9092,10 +9653,7 @@ class Transbordo(gtk.Window):
             sw.set_size_request(200, 300)
         self.model_transbordo = gtk.ListStore(str, str, str, str, str, str, gobject.TYPE_PYOBJECT)
         self.treeview_transbordo = Widgets.TreeView(self.model_transbordo)
-        columnas = ['PAD',
-         'RUTA',
-         'SALIDA',
-         'ESTADO']
+        columnas = ['PAD', 'RUTA', 'SALIDA', 'ESTADO']
         for i, columna in enumerate(columnas):
             cell_text = gtk.CellRendererText()
             tvcolumn = Widgets.TreeViewColumn(columna)
@@ -9418,7 +9976,7 @@ class BuscarSalida(gtk.Dialog):
         self.entry_padron = Widgets.Numero(4)
         hbox.pack_start(self.entry_padron, False, False, 0)
         self.entry_padron.connect('activate', self.buscar)
-        self.vueltas = Vueltas(self.http)
+        self.vueltas = Vueltas()
         self.vbox.pack_start(self.vueltas, True, True, 0)
         self.vueltas.connect('editar-llegadas', self.aceptar)
         self.vueltas.connect('salida-seleccionada', self.seleccionada)
@@ -9440,7 +9998,7 @@ class BuscarSalida(gtk.Dialog):
             self.padron = self.entry_padron.get_int()
             self.vueltas.actualizar(data)
 
-    def seleccionada(self, widget, padron, salida):
+    def seleccionada(self, widget, salida):
         self.salida = salida
 
     def aceptar(self, *args):
@@ -9474,27 +10032,31 @@ class Trackers(gtk.Window):
         self.dia = dia
         self.ruta = ruta
         self.lado = lado
+        self.set_title('Enviar Mensaje de Texto')
         if padron:
             self.padron = padron
         else:
             self.padron = None
-        hbox_main = gtk.HBox(False, 0)
+        hbox_main = gtk.HBox(True, 5)
         self.add(hbox_main)
-        frame = Widgets.Frame('Configuración Tracker')
-        hbox_main.pack_start(frame, False, False, 5)
-        vbox = gtk.VBox(False, 2)
+        frame = Widgets.Frame()
+        # hbox_main.pack_start(frame, False, False, 10)
+        vbox = gtk.VBox(False, 5)
         frame.add(vbox)
-        hbox = gtk.HBox(False, 0)
+        hbox = gtk.HBox(False, 5)
+        label = gtk.Label()
+        label.set_markup('<big><b>Configuración Tracker</b></big>')
+        vbox.pack_start(label, False, False, 10)
         vbox.pack_start(hbox, False, False, 0)
         hbox.pack_start(gtk.Label('Buscar Padrón:'), False, False, 0)
         self.entry_padron = Widgets.Numero(4)
-        hbox.pack_start(self.entry_padron, False, False, 0)
+        hbox.pack_start(self.entry_padron, True, True, 0)
         tabla = Widgets.Tabla()
-        vbox.pack_start(tabla, False, False, 0)
+        vbox.pack_start(tabla, False, False, 5)
         titulos = (
             ('padron', 'PADRON:'),
             ('placa', 'PLACA:'),
-            ('tracker', 'Nº Serie GPS:'),
+            ('tracker', '# Serie GPS:'),
             ('celular', 'Celular:'),
             ('estado', 'Estado:'),
             ('salida', 'Última Salida:'),
@@ -9515,34 +10077,45 @@ class Trackers(gtk.Window):
             self.datos[k] = label
             tabla.attach(label, 1, 2, i, i + 1)
             i += 1
-        frame = Widgets.Frame('Emparejar Dispositivo GPS')
+        frame = Widgets.Frame()
         vbox.pack_start(frame, False, False, 0)
-        hbox = gtk.HBox(False, 0)
-        frame.add(hbox)
-        hbox.pack_start(gtk.Label('Nº Serie GPS:'), False, False, 0)
+        vbox = gtk.VBox(False, 0)
+        frame.add(vbox)
+        label = gtk.Label()
+        label.set_markup('<big><b>Emparejar Dispositivo GPS</b></big>')
+        vbox.pack_start(label, False, False, 10)
+        hbox = gtk.HBox(False, 5)
+        vbox.pack_start(hbox, False, False, 5)
+        hbox.pack_start(gtk.Label('# Serie GPS:'), False, False, 5)
         self.entry_tracker = Widgets.Numero(5)
         hbox.pack_start(self.entry_tracker, False, False, 0)
         self.but_emparejar = Widgets.Button('icono.png', 'Busque una unidad', 48)
         self.but_emparejar.set_sensitive(False)
         hbox.pack_start(self.but_emparejar, False, False, 0)
-        frame = Widgets.Frame('Enviar Mensaje de Texto')
+        frame = Widgets.Frame()
         hbox_main.pack_start(frame, False, False, 5)
         vbox = gtk.VBox(False, 0)
         frame.add(vbox)
+        label = gtk.Label()
+        # label.set_markup('<big><b>Enviar Mensaje de Texto</b></big>')
+        label.set_markup('Escriba el mensaje y seleccione a qué unidades enviará el mensaje')
+        vbox.pack_start(label, False, False, 10)
+
         hbox = gtk.HBox(False, 0)
         vbox.pack_start(hbox, False, False, 0)
         hbox.pack_start(gtk.Label('Mensaje (max 64):'), False, False, 0)
         self.entry_mensaje = Widgets.Texto(64)
-        hbox.pack_start(self.entry_mensaje, False, False, 0)
+        hbox.pack_end(self.entry_mensaje, False, False, 0)
         self.radio_padrones = gtk.RadioButton(None, 'Enviar a: ', False)
         hbox = gtk.HBox(False, 0)
-        vbox.pack_start(hbox, False, False, 0)
+        vbox.pack_start(hbox, False, False, 5)
         hbox.pack_start(self.radio_padrones, False, False, 0)
         self.radio_todos = gtk.RadioButton(self.radio_padrones, 'Todos', True)
+        self.radio_todos.connect('clicked', self.toggled)
         vbox.pack_start(self.radio_todos, False, False, 0)
         self.entry_padrones = Widgets.Texto(64)
         hbox.pack_end(self.entry_padrones, False, False, 0)
-        but_enviar = Widgets.Button('SMS.png', 'Enviar Mensaje', 48)
+        but_enviar = Widgets.Button('sms.png', 'Enviar Mensaje', 48)
         vbox.pack_start(but_enviar, False, False, 0)
         self.entry_padron.connect('activate', self.buscar_padron)
         self.but_emparejar.connect('clicked', self.emparejar)
@@ -9553,6 +10126,15 @@ class Trackers(gtk.Window):
             self.entry_padrones.set_text(str(self.padron))
             self.buscar_padron()
         self.show_all()
+
+    def toggled(self, *args):
+        todos = self.radio_todos.get_active()
+        if todos:
+            self.entry_padrones.set_sensitive(False)
+        else:
+            self.entry_padrones.set_sensitive(True)
+            self.entry_padrones.grab_focus()
+
 
     def buscar_padron(self, *args):
         padron = self.entry_padron.get_text()
@@ -9609,8 +10191,6 @@ class Trackers(gtk.Window):
         self.http.load('enviar-mensaje', datos)
 
 
-
-
 class FondoMultiple(gtk.Dialog):
 
     referencia = ''
@@ -9636,7 +10216,7 @@ class FondoMultiple(gtk.Dialog):
         self.ruta = padre.ruta
         self.lado = padre.lado
         self.dia = padre.dia
-        self.fondos = self.http.getFondos()
+        self.fondos = self.http.get_fondos()
         tabla = gtk.Table(2, 2)
         tabla.attach(gtk.Label('Padrón:'), 0, 1, 0, 1)
         tabla.attach(gtk.Label('Día:'), 0, 1, 1, 2)
@@ -9707,7 +10287,7 @@ class FondoMultiple(gtk.Dialog):
         path = int(path)
         self.model[path][2] = not self.model[path][2]
         if self.model[path][2]:
-            data = self.http.getFondos(self.model[path][3])
+            data = self.http.get_fondos(self.model[path][3])
             if data:
                 self.treeview.set_cursor(path, self.columns[1], True)
         self.calcular()
@@ -9757,7 +10337,7 @@ class FondoMultiple(gtk.Dialog):
         self.dia = self.fecha.get_date()
         self.data = []
         if respuesta:
-            datos = self.http.getFondos()
+            datos = self.http.get_fondos()
             items = []
             i = 0
             total = 0
@@ -9783,11 +10363,30 @@ class FondoMultiple(gtk.Dialog):
             for i in items:
                 i['items'] = len(items)
                 i['total'] = total
+                i['test'] = True
                 datos = {
                     'json': json.dumps(i),
                     'padron': self.padron,
                     'dia': self.dia,
-                    'ruta_id': self.ruta
+                    'ruta_id': self.ruta,
+                }
+                respuesta = self.http.load('fondo-multiple', datos)
+                if respuesta:
+                    print('respuesta', respuesta)
+                    if respuesta['error']:
+                        return Widgets.Alerta('Comprobación de Fondos', 'warning.png',
+                                          respuesta['mensaje'])
+                else:
+                    return
+            for i in items:
+                i['items'] = len(items)
+                i['total'] = total
+                i['test'] = False
+                datos = {
+                    'json': json.dumps(i),
+                    'padron': self.padron,
+                    'dia': self.dia,
+                    'ruta_id': self.ruta,
                 }
                 respuesta = self.http.load('fondo-multiple', datos)
                 if respuesta:
@@ -9808,3 +10407,14 @@ class FondoMultiple(gtk.Dialog):
 
     def cerrar(self, *args):
         self.destroy()
+
+
+if __name__ == '__main__':
+    # t = Trackers(None, '2108', 1, 1, None)
+    from Http import Http
+    http = Http([])
+    t = Reporte(http, '2018-04-12', 1, None)
+    # http.grifo = []
+    # http.seriacion = {'facturas': []}
+    # g = Grifo(http, None, None)
+    gtk.main()

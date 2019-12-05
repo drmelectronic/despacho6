@@ -156,10 +156,12 @@ class Hilo(threading.Thread):
         rate = w.getframerate()
         w.close()
         t = frames * 1. / rate
-        print path
         if os.name == 'nt':
+            path = path.replace('/', '\\')
+            print path
             winsound.PlaySound(path, winsound.SND_FILENAME|winsound.SND_ASYNC)
         else:
+            print path
             #if sys.maxint == 2147483647:
             #pygame.mixer.music.load(path)
             #pygame.mixer.music.play()

@@ -1,4 +1,3 @@
-#! /usr/bin/python
 # -*- coding: utf-8 -*-
 # -*- encoding: utf-8 -*-
 
@@ -405,12 +404,55 @@ class Impresion:
                 y += 10
             self.rectangulo(113, y + 2 - 10, 52, altura)
 
+class Test:
+    esc = chr(27)
+    sangria = 3
+    x = 0
+    y = 0
+    factory = 45 / 19.
+    factorx = 6.
+    texto = ''
+
+    def __init__(self):
+        imp = Imp()
+        self.path = 'outs/impresion.txt'
+        texto = imp.test()
+        f = file(self.path, 'wb')
+        f.write(texto)
+        print texto
+        f.close()
+        if os.name == 'nt':
+            a = os.path.abspath(self.path)
+            try:
+                ticket = open('outs/printer', 'rb')
+                memoria = ticket.read()
+                ticket.close()
+                printer_name = json.loads(memoria)['tarjeta']
+            except:
+                print 'No hay impresora registrada'
+            else:
+                hPrinter = win32print.OpenPrinter(printer_name)
+                try:
+                  hJob = win32print.StartDocPrinter(hPrinter, 1, ("TCONTUR", None, "RAW"))
+                  try:
+                    win32print.StartPagePrinter(hPrinter)
+                    win32print.WritePrinter(hPrinter, str(texto))
+                    win32print.EndPagePrinter(hPrinter)
+                  finally:
+                    win32print.EndDocPrinter(hPrinter)
+                finally:
+                  win32print.ClosePrinter(hPrinter)
+        else:
+            os.system("gtklp -C " + self.path)
+
 
 class Excel:
 
     _letras = ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
         'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-        'W', 'X', 'Y', 'Z']
+        'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ',
+        'AK', 'AL', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV',
+        'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD', 'BE,' 'BF', 'BG', 'BH', 'BI', 'BJ']
 
     def __init__(self, titulo, subtitulo, cabeceras, filas, widths):
         self.titulo = unicode(titulo)
@@ -466,225 +508,6 @@ class Excel:
 from serial import Serial
 from escpos import printer
 
-class ESCPOS:
-
-    def __init__(self, tipo):
-        self.epson = None
-        self.usb = False
-        self.tipo = tipo
-        self.puerto = 'LPT1'
-        self.log = ''
-        self.buscar_serial()
-        try:
-            ticket = open('outs/printer', 'rb')
-            memoria = ticket.read()
-            ticket.close()
-            self.config = json.loads(memoria)
-        except:
-            self.config = {
-                self.tipo: 'LPT1',
-                'corte': True,
-                'lineas_final': 5,
-                'tarjeta': '-',
-                'formato': False
-            }
-            self.guardar_config()
-        grabar = False
-        if not self.tipo in self.config:
-            self.config[self.tipo] = 'LPT1'
-            grabar = True
-        if not 'corte' in self.config:
-            self.config['corte'] = True
-            grabar = True
-        if not 'lineas_final' in self.config:
-            self.config['lineas_final'] = 0
-            grabar = True
-        if not 'formato' in self.config:
-            self.config['formato'] = False
-            grabar = True
-        if not 'tarjeta' in self.config:
-            self.config['tarjeta'] = '-'
-            grabar = True
-        if grabar:
-            self.guardar_config()
-        self.set_config()
-
-    def set_config(self):
-        puerto_ = self.config[self.tipo]
-        if 'COM' in puerto_:
-            self.conectar_serial(puerto_)
-            self.usb = False
-        elif not 'LPT' in puerto_:
-            self.usb = True # USB
-            self.epson = None
-        else:
-            self.epson = None
-            self.usb = False
-
-    def guardar_config(self):
-        ticket = open('outs/printer', 'wb')
-        ticket.write(json.dumps(self.config))
-        ticket.close()
-
-    def buscar_serial(self):
-        num_ports = 20
-        dispositivos_serie = []
-        if os.name == 'nt':
-            for i in range(num_ports):
-                try:
-                    s = Serial(port=i, baudrate=9600, bytesize=8, timeout=0)
-                    s.write('\n\n')
-                    s.close()
-                except:
-                    self.log += 'No se pudo conectar a COM%s\n' % i
-                else:
-                    dispositivos_serie.append(s.portstr)
-        else:
-            for i in range(num_ports):
-                port = '/dev/ttyS%d' % i
-                try:
-                    s = Serial(port=port, baudrate=9600, bytesize=8, timeout=0)
-                    s.close()
-                except:
-                    self.log += 'No se pudo conectar %s\n' % port
-                else:
-                    dispositivos_serie.append(port)
-            for i in range(num_ports):
-                port = '/dev/ttyUSB%d' % i
-                try:
-                    s = Serial(port=port, baudrate=9600, bytesize=8, timeout=0)
-                    s.close()
-                except:
-                    self.log += 'No se pudo conectar %s\n' % port
-                else:
-                    dispositivos_serie.append(port)
-        self.seriales = dispositivos_serie
-
-    def conectar_serial(self, puerto):
-        try:
-            self.epson = printer.Serial(devfile=puerto, baudrate=9600, bytesize=8, timeout=0)
-        except:
-            self.epson = None
-        else:
-            print self.epson
-            print dir(self.epson)
-            print self.epson.timeout
-            self.config[self.tipo] = puerto
-            self.guardar_config()
-
-    def probar(self):
-        print 'probar'
-        comandos = ((('CENTER', 'b', 'normal', 1, 1), '----  %s  ----' % datetime.datetime.now()),)
-        self.imprimir(comandos)
-
-    def paralela(self, puerto):
-        self.config[self.tipo] = puerto
-        self.epson = None
-
-    def imprimir(self, comandos, cortar=True):
-        print 'IMPRIMIR *****', self.tipo
-        texto = json.dumps(comandos)
-        ticket = open('outs/ticket.lst', 'wb')
-        ticket.write(texto)
-        ticket.close()
-        if self.epson is None:
-            ticket = open('outs/ticket.lpt', 'wb')
-            previa = open('outs/ticket.txt', 'wb')
-            texto = ''
-            vista = ''
-            esc = chr(27)
-            emph = esc + 'E'
-            emphOFF = esc + 'F'
-            dubStrike = esc + 'G'
-            dubStrikeOFF = esc + 'H'
-            cutpaper = esc + chr(105)
-            bold = emph + dubStrike
-            boldOFF = emphOFF + dubStrikeOFF
-            for c in comandos:
-                if c is None:
-                    texto += '\n'
-                    vista += '\n'
-                else:
-                    if 'LEFT' == c[0][0]:
-                        texto += chr(27) + chr(97) + chr(0)
-                    if 'CENTER' == c[0][0]:
-                        texto += chr(27) + chr(97) + chr(1)
-                    if 'RIGHT' == c[0][0]:
-                        texto += chr(27) + chr(97) + chr(2)
-                    if 'u' in c[0][2]:
-                        texto += chr(27) + chr(45) + chr(49)
-                    if 'b' in c[0][2]:
-                        texto += chr(27) + chr(97) + chr(2)
-                    texto += c[1]
-                    vista += c[1]
-                    if 'u' in c[0][2]:
-                        texto += chr(27) + chr(45) + chr(48)
-            if cortar:
-                texto += '\n' * self.config['lineas_final']
-                vista += '\n' * self.config['lineas_final']
-                if self.config['corte'] is True:
-                    texto += cutpaper
-                    vista += cutpaper
-                    print 'CORTAR DEFAULT 105'
-                else:
-                    try:
-                        byts = self.config['corte'].split(',')
-                        for b in byts:
-                            texto += chr(int(b))
-                            vista += chr(int(b))
-                        print 'CORTAR %s' % self.config['corte']
-                    except:
-                        print 'NO CORTAR'
-            else:
-                print('-- esperando siguiente parte --')
-            ticket.write(texto)
-            ticket.close()
-            previa.write(vista)
-            previa.close()
-            print 'PARALELA'
-            print vista
-            if os.name == 'nt':
-                if self.usb:
-                    hprinter = win32print.OpenPrinter(self.config[self.tipo])
-                    try:
-                        hJob = win32print.StartDocPrinter(hprinter, 1, ("TCONTUR", None, "RAW"))
-                        try:
-                            win32print.StartPagePrinter(hprinter)
-                            if self.config['formato']:
-                                win32print.WritePrinter(hprinter, str(texto))
-                            else:
-                                win32print.WritePrinter(hprinter, str(vista))
-                            win32print.EndPagePrinter(hprinter)
-                        finally:
-                            win32print.EndDocPrinter(hprinter)
-                    finally:
-                        win32print.ClosePrinter(hprinter)
-                    print self.config[self.tipo]
-                else:
-                    os.system('cd outs && type ticket.lpt > ' + self.config[self.tipo])
-
-        else:
-            print 'imprimir', self.epson
-            vista = ''
-            for c in comandos:
-                if c is None:
-                    self.epson.control('LF')
-                    vista += '\n'
-                else:
-                    self.epson.set(*c[0])
-                    self.epson.text(c[1])
-                    vista += c[1]
-                print 'i'
-            previa = open('outs/ticket.txt', 'wb')
-            previa.write(vista)
-            previa.close()
-            print 'SERIAL'
-            print vista
-            self.epson.control('VT')
-            self.epson.control('VT')
-            self.epson.control('LF')
-            self.epson.control('LF')
-
 # epson = ESCPOS()
 # print epson.log
 # comandos = (
@@ -711,6 +534,45 @@ class Imp:
     factorx = 6.
     texto = ''
 
+    def setTimes(self):
+        self.texto += self.esc + chr(0x78) + chr(0x01)
+        self.texto += self.esc + chr(0x6B) + chr(0x00)
+
+    def setSerif(self):
+        self.texto += self.esc + chr(0x78) + chr(0x01)
+        self.texto += self.esc + chr(0x6B) + chr(0x01)
+
+    def setDraft(self):
+        self.texto += self.esc + chr(0x78) + chr(0x00)
+
+    def test(self):
+        self.definir_salto(15)
+        self.normal('NORMAL ')
+        self.negrita('NEGRITA')
+        self.grande('GRANDE')
+        self.chico('CHICO')
+        self.enter()
+        self.setSerif()
+        self.normal('NORMAL ')
+        self.negrita('NEGRITA')
+        self.grande('GRANDE')
+        self.chico('CHICO')
+        self.enter()
+        self.setDraft()
+        self.normal('NORMAL ')
+        self.negrita('NEGRITA')
+        self.grande('GRANDE')
+        self.chico('CHICO')
+        self.enter()
+        self.setTimes()
+        self.normal('NORMAL ')
+        self.negrita('NEGRITA')
+        self.grande('GRANDE')
+        self.chico('CHICO')
+        self.enter()
+        return self.texto
+
+
     def reset(self):
         self.texto += self.esc + '@'
 
@@ -724,6 +586,8 @@ class Imp:
         self.texto += self.esc + '!' + chr(8) + texto + self.esc + '!' + chr(0)
 
     def normal(self, texto):
+        self.negrita(texto)
+        return
         self.x += 8 * len(texto)
         self.texto += self.esc + '!' + chr(0) + texto
 
@@ -802,6 +666,7 @@ class Imp:
                 return convertido
 
     def metodo_escpos(self, plantilla, datos, margen):
+        self.setSerif()
         self.datos = datos
         lista = []
         for p in plantilla.keys():
@@ -833,23 +698,181 @@ class Imp:
         return self.texto
 
 
+class ESCPOS:
+
+    def __init__(self, data):
+        self.config = data
+        self.puerto = 'LPT1'
+        self.log = ''
+        self.buscar_serial()
+        # self.config = {
+        #     self.tipo: 'LPT1',
+        #     'corte': True,
+        #     'lineas_final': 5,
+        #     'tarjeta': '-',
+        #     'formato': False
+        # }
+        self.set_config()
+
+    def probar(self):
+        print 'probar'
+        comandos = ((('CENTER', 'b', 'normal', 1, 1), '----  %s  ----' % datetime.datetime.now()),)
+        self.imprimir(comandos)
+
+    def imprimir(self, comandos, cortar=True):
+        texto = json.dumps(comandos)
+        ticket = open('outs/ticket.lst', 'wb')
+        ticket.write(texto)
+        ticket.close()
+
+        ticket = open('outs/ticket.lpt', 'wb')
+        previa = open('outs/ticket.txt', 'wb')
+        vista = 'EPSON ' + str(self.epson)
+        ESC = chr(27)
+        GS = chr(29)
+        cutpaper = GS + 'V' + chr(49)
+        texto = ESC + '@'  # limpiar formatos
+        texto += ESC + 't' + chr(18)  # español
+        for c in comandos:
+            if c is None:
+                texto += '\n'
+                vista += '\n'
+            elif c[1] == ' \n \n \n \n':
+                print('saltando final')
+            else:
+                if 'LEFT' == c[0][0]:
+                    texto += ESC + 'a' + chr(0)
+                if 'CENTER' == c[0][0]:
+                    texto += ESC + 'a' + chr(1)
+                if 'RIGHT' == c[0][0]:
+                    texto += ESC + 'a' + chr(2)
+                if 'g' in c[0][2]:
+                    texto += GS + '!' + chr(17)  # fuente grande
+                elif 's' in c[0][2]:
+                    texto += GS + '!' + chr(1)  # fuente pequeña
+                else:
+                    texto += GS + '!' + chr(0)  # fuente normal
+                if 'u' in c[0][2]:
+                    texto += ESC + '-' + chr(2)
+                if 'b' in c[0][2]:
+                    texto += ESC + 'E' + chr(1)
+                texto += c[1]
+                vista += c[1]
+                if 'u' in c[0][2]:
+                    texto += ESC + '-' + chr(0)
+                if 'b' in c[0][2]:
+                    texto += ESC + 'E' + chr(0)
+        if cortar:
+            texto += '\n\nSistema de Gestion TCONTUR'
+            vista += '\n\nSistema de Gestion TCONTUR'
+
+            lineas = self.config['lineas_final'] - 2
+            texto += '\n' * lineas
+            vista += '\n' * lineas
+            if self.config['corte'] is True:
+                texto += cutpaper
+                vista += cutpaper
+            else:
+                try:
+                    byts = self.config['corte'].split(',')
+                    for b in byts:
+                        texto += chr(int(b))
+                        vista += chr(int(b))
+                except:
+                    pass
+        else:
+            print('-- esperando siguiente parte --')
+        ticket.write(texto)
+        ticket.close()
+        previa.write(vista)
+        previa.close()
+        print vista
+        if os.name == 'nt':
+            if self.usb:
+                hprinter = win32print.OpenPrinter(self.config[self.tipo])
+                try:
+                    hJob = win32print.StartDocPrinter(hprinter, 1, ("TCONTUR", None, "RAW"))
+                    try:
+                        win32print.StartPagePrinter(hprinter)
+                        if self.config['formato']:
+                            win32print.WritePrinter(hprinter, str(texto))
+                        else:
+                            win32print.WritePrinter(hprinter, str(vista))
+                        win32print.EndPagePrinter(hprinter)
+                    finally:
+                        win32print.EndDocPrinter(hprinter)
+                finally:
+                    win32print.ClosePrinter(hprinter)
+                print self.config[self.tipo]
+            else:
+                os.system('cd outs && type ticket.lpt > ' + self.config[self.tipo])
+        else:
+            print 'imprimir linux', self.epson
+            vista = 'EPSON NONE'
+            for c in comandos:
+                if c is None:
+                    self.epson.control('LF')
+                    vista += '\n'
+                else:
+                    self.epson.set(*c[0])
+                    self.epson.text(c[1])
+                    vista += c[1]
+                print 'i'
+            previa = open('outs/ticket.txt', 'wb')
+            previa.write(vista)
+            previa.close()
+            print 'SERIAL'
+            print vista
+            self.epson.control('VT')
+            self.epson.control('VT')
+            self.epson.control('LF')
+            self.epson.control('LF')
+
 if __name__ == '__main__':
+    impresora = ESCPOS('puerto')
+    ticket = [
+        # [["CENTER", "b", "b", 1, 1], "ECONAIN S.A.C.\n"],
+        # [["CENTER", "b", "normal", 1, 1], "Jr. San Lucas 211 - Urb. Palao - S.M.P.\n"],
+        # [["CENTER", "b", "normal", 1, 1], "R.U.C.: 20516318547\n"],
+        # [["CENTER", "b", "b", 1, 1], "RECIBO INTERNO: 000 - 0000007\n\n"],
+        # [["LEFT", "b", "normal", 1, 1], "  DIA: 02/05/2019          \n"],
+        # [["LEFT", "b", "normal", 1, 1], "  PLACA:  ALW104        PADRON:  002  \n"],
+        [["LEFT", "b", "normal", 1, 1], "  CLIENTE: Ñañez con tílde\n"],
+        # [["LEFT", "b", "normal", 1, 1], "\n"],
+        # [["LEFT", "b", "ub", 1, 1], "  DETALLE                CANT     TOTAL \n"],
+        # [["LEFT", "b", "u", 1, 1], "AYUDA MUTUA 120.0         1.0     120.0\n"],
+        # [["LEFT", "b", "b", 1, 1], "                  TOTAL          120.00\n\n"],
+        # [["LEFT", "b", "normal", 1, 1], "SON: CIENTO VEINTE CON 00/100  NUEVOS SOLES\n"],
+        # [["CENTER", "b", "normal", 1, 1], "F.PAGO: CONTADO   ID: 5629499534213120\n"],
+        # [["CENTER", "b", "normal", 1, 1], "SuperAdmin          10:06:30 02/05/2019\n"],
+        # [["CENTER", "b", "normal", 1, 1], "GRACIAS !!\n"]
+    ]
+    impresora.imprimir(ticket)
+
+if __name__ == '__main__das':
     from escpos import *
     """ Seiko Epson Corp. Receipt Printer M129 Definitions (EPSON TM-T88IV) """
-    # Epson = printer.Usb(0x04b8, 0x0202)
-    Epson = printer.Usb(0x067b, 0x2305)  # Prolific
+    Epson = printer.Usb(0x04b8, 0x0202)  # TM-U220
+    # Epson = printer.Usb(0x067b, 0x2305)  # Prolific
     ESC = chr(27)
     GS = chr(29)
     LF = chr(10)
-    raw = ESC + "a" + chr(1)  # centrado
+    raw = ESC + '@'
+    raw += "IZQUIERDA"+ LF
     raw += ESC + "!" + chr(1)  # fuente pequeña
+    raw += "PEQUEÑA" + LF
+    raw += "1234567890"*10 + LF
     raw += "TICKET: 109 - 1262954   HORA: %s" % datetime.datetime.now().strftime('%H:%M:%S %d/%m/%Y') + LF
     raw += ESC + "!" + chr(0)  # fuente grande
+    raw += "NORMAL" + LF
+    raw += "1234567890"*10 + LF
     raw += GS + "!" + chr(17)  # tamaño 2x2
-    # boleto = 'ADULTO'[:13]
-    # raw += boleto + ' ' * (13 - len(boleto))  + 'S/ 2.60'+ LF
+    raw += "GRANDE" + LF
+    raw += "1234567890"*10 + LF
     raw += GS + "(L" + chr(6) + chr(0) + chr(48) + chr(69) + "B2" + chr(1) + chr(1) # boleto
     raw += GS + "!" + chr(0)  # tamaño 1x1
+    raw += ESC + "a" + chr(1)  # centrado
+    raw += "CENTRADO" + LF
     raw += 'IZAGUIRRE - UNI' + LF
     raw += ESC + "!" + chr(1)  # fuente pequeña
     raw += '_' * 42 + LF
@@ -861,7 +884,7 @@ if __name__ == '__main__':
     Epson._raw(raw)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__--':
     tarjeta = {
         "titulo": "HOJA DE RUTA 2411",
         "metodo": "ticket",
@@ -917,7 +940,11 @@ if __name__ == '__main__':
     1/0
     from escpos import *
     """ Bixolon SRP-270D """
-    Epson = printer.Usb(0x0419, 0x3c01)
+    bixolon= printer.Usb(0x0419, 0x3c01)
+    """ Epson TM-U220 """
+    epson = printer.Usb(0x04b8, 0x0202)
+    impresora = Epson()
+
     ticket = file('outs/ticket.txt', 'rb')
     raw = ticket.read()
     ticket.close()

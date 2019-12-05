@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
+import models
 
 __author__ = "daniel"
 __date__ = "$06-mar-2012 16:15:38$"
 import os, sys
 if os.name == 'nt':
     import win32print
+import Impresion
 import gtk
 import gobject
 import datetime
@@ -16,6 +18,7 @@ import time
 import json
 import base64
 from uuid import getnode
+from Http import Http
 import xlrd
 
 class Entry(gtk.Entry):
@@ -62,26 +65,15 @@ class Fecha(gtk.Button):
 
     def __init__(self):
         super(Fecha, self).__init__()
-        self.calendar = gtk.Calendar()
+        self.cwindow = None
         self.set_size_request(90, 25)
-        self.cwindow = gtk.Window(gtk.WINDOW_POPUP)
-        self.cwindow.set_position(gtk.WIN_POS_MOUSE)
-        self.cwindow.set_decorated(False)
-        self.cwindow.set_modal(True)
-        self.eb = gtk.EventBox()
-        self.eb.add(self.calendar)
-        self.cwindow.add(self.eb)
-        self.currentDate = datetime.date.today()
-        self.year, self.month, self.day = self.calendar.get_date()
-        self.calendar.mark_day(self.day)
-        self.month += 1
         self.cerrar = False
-        self.calendar.connect('day-selected', self.update_entry)
-        self.calendar.connect('button-release-event', self.close)
+        self.calendar = None
         self.connect('clicked', self.show_widget)
         self.connect('focus-out-event', self.focus_out_event)
-        self.cwindow.connect('key-release-event', self.hide_widget)
-        self.update_entry()
+        self.currentDate = datetime.date.today()
+        text = self.currentDate.strftime('%d/%m/%Y')
+        self.set_label(text)
         self.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FFFFFF'))
         self.modify_bg(gtk.STATE_INSENSITIVE, gtk.gdk.color_parse('#e5e8e8'))
         self.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse('#328aa4'))
@@ -95,24 +87,50 @@ class Fecha(gtk.Button):
         return self.currentDate
 
     def show_widget(self, *args):
+        self.create_calendar()
+        self.cwindow = gtk.Window(gtk.WINDOW_POPUP)
+        self.cwindow.set_position(gtk.WIN_POS_MOUSE)
+        self.cwindow.set_decorated(False)
+        self.cwindow.set_modal(True)
+        w = self.get_toplevel()
+        self.cwindow.set_transient_for(w)
+        self.eb = gtk.EventBox()
+        print(self.calendar.get_date())
+        self.calendar.mark_day(self.day)
+        self.eb.add(self.calendar)
+        self.cwindow.add(self.eb)
+        self.calendar.connect('day-selected', self.update_entry)
+        self.calendar.connect('button-release-event', self.close)
+        self.cwindow.connect('key-release-event', self.hide_widget)
         self.cwindow.show_all()
+        # self.cwindow.activate_focus()
+
         self.cerrar = False
+        # w = self.get_toplevel()
+        # w.do_move_focus(w, gtk.DIR_TAB_FORWARD)
 
     def hide_widget(self, *args):
-        self.cwindow.hide_all()
+        if self.cwindow:
+            self.cwindow.destroy()
+            self.cwindow = None
 
     def update_entry(self, *args):
+        print('update_entry')
         year, month, day = self.calendar.get_date()
         self.currentDate = datetime.date(year, month + 1, day)
         text = self.currentDate.strftime('%d/%m/%Y')
         self.set_label(text)
         if year == self.year and month + 1 == self.month:
+            print('dia cambiado')
             self.cerrar = True
+            self.close()
         else:
+            print('cambio de mes o año', year, month + 1, self.year, self.month)
             self.year = year
             self.month = month + 1
 
     def close(self, *args):
+        print('close')
         if self.cerrar:
             self.hide_widget()
             self.emit('changed')
@@ -122,6 +140,7 @@ class Fecha(gtk.Button):
 
     def autodate(self):
         d = datetime.date.today()
+        self.create_calendar()
         self.calendar.select_month(d.month - 1, d.year)
         self.calendar.select_day(d.day)
         self.update_entry()
@@ -131,6 +150,7 @@ class Fecha(gtk.Button):
             d.month
         except:
             d = datetime.datetime.strptime(d, '%Y-%m-%d')
+        self.create_calendar()
         self.calendar.select_month(d.month - 1, d.year)
         self.calendar.select_day(d.day)
         self.update_entry()
@@ -138,6 +158,12 @@ class Fecha(gtk.Button):
     def add_day(self, d):
         self.currentDate += datetime.timedelta(d)
         self.set_date(self.currentDate)
+
+    def create_calendar(self):
+        if self.calendar is None:
+            self.calendar = gtk.Calendar()
+            self.year, self.month, self.day = self.calendar.get_date()
+            self.month += 1
 
 
 class FechaSpin(gtk.HBox):
@@ -149,7 +175,7 @@ class FechaSpin(gtk.HBox):
 
     def __init__(self):
         super(FechaSpin, self).__init__(False, 0)
-        self.set_size_request(90, 30)
+        self.set_size_request(160, 30)
         self.year = gtk.SpinButton(digits=0)
         self.year.set_range(1900, 2100)
         self.year.set_increments(1, 2)
@@ -166,7 +192,7 @@ class FechaSpin(gtk.HBox):
         self.day.set_wrap(True)
         self.day.connect('wrapped', self.wrap_dia)
         self.day.set_size_request(45, 25)
-        self.clear = Button('limpiar.png', None, 16)
+        self.clear = Button('delete.png', None, 16)
         self.pack_start(self.day, False, False, 0)
         self.pack_start(gtk.Label('/'), False, False, 0)
         self.pack_start(self.month, False, False, 0)
@@ -178,6 +204,9 @@ class FechaSpin(gtk.HBox):
         self.day.connect('button-press-event', self.habilitar)
         self.month.connect('button-press-event', self.habilitar)
         self.year.connect('button-press-event', self.habilitar)
+        self.day.connect('activate', self.key_enter_press)
+        self.month.connect('activate', self.key_enter_press)
+        self.year.connect('activate', self.key_enter_press)
         self.habilitado = True
         self.set(datetime.date.today())
 
@@ -220,6 +249,10 @@ class FechaSpin(gtk.HBox):
         return datetime.date(self.year.get_value_as_int(),
             self.month.get_value_as_int(), self.day.get_value_as_int())
 
+    def get_date(self):
+        # compatibilidad con Fecha()
+        return self.get()
+
     def set(self, date):
         if date is None:
             y, m, d = (0, 0, 0)
@@ -243,6 +276,13 @@ class FechaSpin(gtk.HBox):
 
     def limpiar(self, *args):
         self.set(None)
+
+    def key_enter_press(self, *args):
+        w = self.get_toplevel()
+        w.do_move_focus(w, gtk.DIR_TAB_FORWARD)
+
+    def hide_clear_button(self):
+        self.clear.hide_all()
 
 
 class ComboBox(gtk.Button):
@@ -291,6 +331,15 @@ class ComboBox(gtk.Button):
     def set_id(self, i):
         for row in self.lista:
             if row[self.column] == i:
+                self.label.set_markup(row[0])
+                self.id = row[self.column]
+                self.emit('changed')
+                return True
+        return False
+
+    def set_text(self, t):
+        for row in self.lista:
+            if row[0] == t:
                 self.label.set_markup(row[0])
                 self.id = row[self.column]
                 self.emit('changed')
@@ -577,6 +626,7 @@ class Hora(Entry):
 class Button(gtk.Button):
 
     def __init__(self, archivo, string=None, size=24, tooltip=None):
+        # type: (string, string, int, string) -> None
         super(Button, self).__init__()
         self.hbox = gtk.HBox(False, 0)
         path = 'images/PNG-%d/' % size
@@ -671,10 +721,8 @@ class ButtonDoble(gtk.Button):
 
 class ButtonDoblePersonal(gtk.Button):
 
-    def __init__(self, http, padre, tooltip=None):
+    def __init__(self, tooltip=None):
         super(ButtonDoblePersonal, self).__init__()
-        self.http = http
-        self.padre = padre
         hbox = gtk.HBox(False, 0)
         self.add(hbox)
         self.hbox1 = gtk.HBox(False, 0)
@@ -707,15 +755,22 @@ class ButtonDoblePersonal(gtk.Button):
             self.tooltips = gtk.Tooltips()
             self.tooltips.set_tip(self, tooltip)
 
-    def set(self, ok, i=0):
-        self.t_id = i
+    def set(self, trabajador):
         self.hbox1.hide_all()
         self.hbox2.hide_all()
         self.hbox3.hide_all()
-        self.ok = ok
-        if ok:
+        self.trabajador = trabajador
+        if isinstance(self.trabajador, models.model_base):
+            self.hbox1.hide_all()
+            self.hbox2.hide_all()
+            self.hbox3.hide_all()
+            self.ok = trabajador.get_icon_datos()
+        else:
+            self.ok = trabajador
+        print('ok', self.ok)
+        if self.ok:
             self.hbox3.show_all()
-        elif ok is None:
+        elif self.ok is None:
             self.hbox1.show_all()
         else:
             self.hbox2.show_all()
@@ -764,10 +819,8 @@ class ButtonDoblePersonal(gtk.Button):
 
 class ButtonDobleUnidad(gtk.Button):
 
-    def __init__(self, http, padre, tooltip=None):
+    def __init__(self, tooltip=None):
         super(ButtonDobleUnidad, self).__init__()
-        self.http = http
-        self.padre = padre
         hbox = gtk.HBox(False, 0)
         self.add(hbox)
         self.hbox1 = gtk.HBox(False, 0)
@@ -800,38 +853,40 @@ class ButtonDobleUnidad(gtk.Button):
             self.tooltips = gtk.Tooltips()
             self.tooltips.set_tip(self, tooltip)
 
-    def set(self, ok, i=0):
-        self.u_id = i
-        self.hbox1.hide_all()
-        self.hbox2.hide_all()
-        self.hbox3.hide_all()
-        self.ok = ok
-        if ok:
+    def set(self, unidad):
+        self.unidad = unidad
+        if self.unidad is None:
+            self.hbox1.hide_all()
+            self.hbox2.hide_all()
+            self.hbox3.hide_all()
             self.hbox3.show_all()
-        elif ok is None:
-            self.hbox1.show_all()
         else:
-            self.hbox2.show_all()
+            self.hbox1.hide_all()
+            self.hbox2.hide_all()
+            self.hbox3.hide_all()
+            self.ok = unidad.get_icon_datos()
+            if self.ok:
+                self.hbox3.show_all()
+            elif self.ok is None:
+                self.hbox1.show_all()
+            else:
+                self.hbox2.show_all()
 
     def click(self, *args):
-        datos = {'unidad_id': self.u_id}
-        respuesta = self.http.load('datos-unidad', datos)
-        self.datos = datos
-        if respuesta:
-            self.dialogo = Alerta_SINO(respuesta['nombre'], '../../outs/imagen.png', respuesta['motivo'])
-            self.dialogo.but_ok.set_text('Crear Incidencia')
-            response = self.dialogo.iniciar()
-            self.dialogo.cerrar()
-            if response:
-                self.dialog = Alerta_Texto('Crear Incidencia de Despacho', [])
-                motivo = self.dialog.iniciar()
-                if motivo:
-                    datos = {
-                        'unidad_id': self.u_id,
-                        'motivo': motivo
-                    }
-                    self.http.load('incidencia', datos)
-                self.dialog.cerrar()
+        self.dialogo = Alerta_SINO(self.unidad.get_modelo(), 'unidad.png', self.unidad.get_motivo_no_disponible())
+        self.dialogo.but_ok.set_text('Crear Incidencia')
+        response = self.dialogo.iniciar()
+        self.dialogo.cerrar()
+        if response:
+            self.dialog = Alerta_Texto('Crear Incidencia de Despacho', [])
+            motivo = self.dialog.iniciar()
+            if motivo:
+                datos = {
+                    'unidad_id': self.unidad.id,
+                    'motivo': motivo
+                }
+                self.http.load('incidencia', datos)
+            self.dialog.cerrar()
 
 
 
@@ -879,9 +934,9 @@ class Avalar(gtk.Dialog):
         tabla.attach(self.fin, 1, 2, 2, 3)
         tabla.attach(self.detalles, 1, 2, 3, 4)
         self.vbox.pack_start(tabla, False, False, 0)
-        but_salir = Button('cancelar.png', "_Cancelar")
-        self.but_ok = Button('aceptar.png', "ar")
-        but_aceptar = Button('aceptar.png', "_Guardar")
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "ar")
+        but_aceptar = Button('checkmark.png', "_Guardar")
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
         self.action_area.pack_start(but_aceptar, False, False, 0)
@@ -924,7 +979,7 @@ class Avalar(gtk.Dialog):
 
 class PagarMultas(gtk.Dialog):
 
-    def __init__(self, datos, http, padre):
+    def __init__(self, datos):
         super(PagarMultas, self).__init__(
             flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
         ventanas = gtk.window_list_toplevels()
@@ -934,8 +989,7 @@ class PagarMultas(gtk.Dialog):
             if v.is_active():
                 parent = v
                 break
-        self.http = http
-        self.padre = padre
+        self.http = Http()
         self.set_modal(True)
         self.set_transient_for(parent)
         self.set_default_size(400, 400)
@@ -951,7 +1005,7 @@ class PagarMultas(gtk.Dialog):
         self.treeview.set_size_request(400, 400)
         self.vbox.pack_start(self.treeview)
         self.treeview.escribir(castigos)
-        but_salir = Button('cancelar.png', "_Cancelar")
+        but_salir = Button('delete.png', "_Cancelar")
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.castigado = datos['castigado']
         self.treeview.connect('activado', self.pagar_multa)
@@ -1077,8 +1131,58 @@ class Mensaje(gtk.Window):
         hbox.pack_start(image, False, False, 5)
         label = gtk.Label()
         label.set_markup(mensaje)
+        label.set_alignment(0, 0.5)
         hbox.pack_start(label, False, False, 5)
         self.show_all()
+
+    def cerrar(self, *args):
+        self.destroy()
+
+
+class Dialogo(gtk.Dialog):
+
+    def __init__(self, titulo, imagen=None, mensaje=None):
+        super(Dialogo, self).__init__(flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
+        ventanas = gtk.window_list_toplevels()
+        parent = ventanas[0]
+        for v in ventanas:
+            if v.is_active():
+                parent = v
+                break
+        self.set_modal(True)
+        self.set_transient_for(parent)
+        self.set_default_size(200, 50)
+        self.set_title(titulo)
+        self.set_position(gtk.WIN_POS_CENTER)
+        self.connect("delete_event", self.cerrar)
+
+        if imagen:
+            hbox = gtk.HBox(False, 0)
+            self.vbox.pack_start(hbox, False, False, 10)
+            image = gtk.Image()
+            image.set_from_file('images/PNG-48/' + imagen)
+            frame = Frame()
+            hbox.pack_start(frame, False, False, 5)
+            frame.add(image)
+            if mensaje:
+                label = gtk.Label()
+                label.set_markup(mensaje)
+                label.set_alignment(0, 0.5)
+                frame = Frame()
+                hbox.pack_start(frame, False, False, 15)
+                frame.add(label)
+
+        self.but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
+        self.add_action_widget(self.but_salir, gtk.RESPONSE_CANCEL)
+        self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
+
+    def iniciar(self):
+        self.show_all()
+        if self.run() == gtk.RESPONSE_OK:
+            return True
+        else:
+            return False
 
     def cerrar(self, *args):
         self.destroy()
@@ -1110,10 +1214,11 @@ class Alerta(gtk.Dialog):
         frame.add(image)
         label = gtk.Label()
         label.set_markup(mensaje)
+        label.set_alignment(0, 0.5)
         frame = Frame()
         hbox.pack_start(frame, False, False, 15)
         frame.add(label)
-        self.but_salir = Button('aceptar.png', "_Aceptar")
+        self.but_salir = Button('checkmark.png', "_Aceptar")
         self.add_action_widget(self.but_salir, gtk.RESPONSE_CANCEL)
         self.set_focus(self.but_salir)
         self.iniciar()
@@ -1140,19 +1245,20 @@ class AlertaTwist(gtk.Dialog):
                 break
         self.set_modal(True)
         self.set_transient_for(parent)
-        self.set_default_size(200, 50)
+        self.set_default_size(280, 50)
         self.set_title(titulo)
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect("delete_event", self.cerrar)
         hbox = gtk.HBox(False, 0)
-        self.vbox.pack_start(hbox, False, False, 10)
+        self.vbox.pack_start(hbox, False, False, 20)
         image = gtk.Image()
         image.set_from_file('images/PNG-48/' + imagen)
-        hbox.pack_start(image, False, False, 5)
+        hbox.pack_start(image, False, False, 20)
         label = gtk.Label()
         label.set_markup(mensaje)
-        hbox.pack_start(label, False, False, 15)
-        self.but_salir = Button('aceptar.png', "_Aceptar")
+        label.set_alignment(0, 0.5)
+        hbox.pack_start(label, True, True, 10)
+        self.but_salir = Button('checkmark.png', "_Aceptar")
         self.action_area.pack_start(self.but_salir, False, False, 0)
         self.but_salir.connect('clicked', self.cerrar)
         self.set_focus(self.but_salir)
@@ -1181,27 +1287,29 @@ class Mensaje(gtk.Dialog):
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect("delete_event", self.cerrar)
         hbox = gtk.HBox(False, 0)
-        self.vbox.pack_start(hbox, False, False, 10)
+        self.vbox.pack_start(hbox, False, False, 20)
         image = gtk.Image()
         image.set_from_file('images/PNG-48/' + imagen)
-        hbox.pack_start(image, False, False, 5)
+        hbox.pack_start(image, False, False, 20)
         self.label = []
         self.count = 0
         for m in mensajes:
             label = gtk.Label()
             label.set_markup(m)
+            label.set_alignment(0, 0.5)
             self.label.append(label)
-            hbox.pack_start(label, False, False, 5)
+            hbox.pack_start(label, True, True, 5)
         if len(mensajes) == 0:
             label = gtk.Label()
             label.set_markup('No hay coincidencias para la búsqueda')
+            label.set_alignment(0, 0.5)
             self.label.append(label)
-            hbox.pack_start(label, False, False, 5)
+            hbox.pack_start(label, True, True, 5)
         self.but_atras = Button('atras.png', u"_Atrás")
         self.action_area.pack_start(self.but_atras, False, False, 0)
         self.but_siguiente = Button('siguiente.png', u"_Siguiente")
         self.action_area.pack_start(self.but_siguiente, False, False, 0)
-        self.but_salir = Button('cancelar.png', "_Cancelar")
+        self.but_salir = Button('delete.png', "_Cancelar")
         self.add_action_widget(self.but_salir, gtk.RESPONSE_CANCEL)
         self.but_atras.connect('clicked', self.atras)
         self.but_siguiente.connect('clicked', self.siguiente)
@@ -1253,20 +1361,21 @@ class Alerta_SINO(gtk.Dialog):
                 break
         self.set_modal(True)
         self.set_transient_for(parent)
-        self.set_default_size(200, 50)
+        self.set_default_size(290, 50)
         self.set_title(titulo)
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect("delete_event", self.cerrar)
         hbox = gtk.HBox(False, 0)
-        self.vbox.pack_start(hbox, False, False, 10)
+        self.vbox.pack_start(hbox, False, False, 20)
         image = gtk.Image()
         image.set_from_file('images/PNG-48/' + imagen)
-        hbox.pack_start(image, False, False, 5)
-        label = gtk.Label()
-        label.set_markup(mensaje)
-        hbox.pack_start(label, False, False, 15)
-        self.but_salir = Button('cancelar.png', "_Cancelar")
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        hbox.pack_start(image, False, False, 20)
+        self.label = gtk.Label()
+        self.label.set_alignment(0, 0.5)
+        self.label.set_markup(mensaje)
+        hbox.pack_start(self.label, True, True, 10)
+        self.but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.add_action_widget(self.but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
         if default:
@@ -1305,24 +1414,25 @@ class Alerta_SINO_Clave(gtk.Dialog):
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect("delete_event", self.cerrar)
         hbox = gtk.HBox(False, 0)
-        self.vbox.pack_start(hbox, False, False, 10)
+        self.vbox.pack_start(hbox, False, False, 20)
         image = gtk.Image()
         image.set_from_file('images/PNG-48/' + imagen)
-        hbox.pack_start(image, False, False, 5)
+        hbox.pack_start(image, False, False, 20)
         label = gtk.Label()
         label.set_markup(mensaje)
-        hbox.pack_start(label, False, False, 15)
+        label.set_alignment(0, 0.5)
+        hbox.pack_start(label, True, True, 10)
         frame = Frame()
-        self.vbox.pack_start(frame, False, False, 5)
+        self.vbox.pack_start(frame, True, True, 5)
         hbox = gtk.HBox(False, 0)
-        hbox.pack_start(gtk.Label('Autorización Supervisor:'), False, False, 5)
+        hbox.pack_start(gtk.Label('Autorización Supervisor:'), False, False, 20)
         frame.add(hbox)
         self.entry_clave = Entry()
         self.entry_clave.set_visibility(False)
         self.entry_clave.connect('activate', self.enter)
         hbox.pack_start(self.entry_clave, False, False, 5)
-        but_salir = Button('cancelar.png', "_Cancelar")
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
         if default:
@@ -1359,19 +1469,20 @@ class AlertaAuto(gtk.Dialog):
                 break
         self.set_modal(True)
         self.set_transient_for(parent)
-        self.set_default_size(200, 50)
+        self.set_default_size(280, 50)
         self.set_title(titulo)
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect("delete_event", self.cerrar)
         hbox = gtk.HBox(False, 0)
-        self.vbox.pack_start(hbox, False, False, 10)
+        self.vbox.pack_start(hbox, False, False, 20)
         image = gtk.Image()
         image.set_from_file('images/PNG-48/' + imagen)
-        hbox.pack_start(image, False, False, 5)
+        hbox.pack_start(image, False, False, 20)
         label = gtk.Label()
         label.set_markup(mensaje)
-        hbox.pack_start(label, False, False, 15)
-        but_salir = Button('aceptar.png', "_Aceptar")
+        label.set_alignment(0, 0.5)
+        hbox.pack_start(label, True, True, 10)
+        but_salir = Button('checkmark.png', "_Aceptar")
         self.action_area.pack_start(but_salir, False, False, 0)
         but_salir.connect('clicked', self.cerrar)
         self.set_focus(but_salir)
@@ -1393,26 +1504,78 @@ class Alerta_Dia_Hora(gtk.Dialog):
                 break
         self.set_modal(True)
         self.set_transient_for(parent)
-        self.set_default_size(200, 50)
+        self.set_default_size(280, 50)
         self.set_title(titulo)
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect("delete_event", self.cerrar)
         hbox = gtk.HBox(False, 0)
-        self.vbox.pack_start(hbox, False, False, 10)
+        self.vbox.pack_start(hbox, False, False, 20)
         image = gtk.Image()
         image.set_from_file('images/PNG-48/' + imagen)
-        hbox.pack_start(image, False, False, 5)
+        hbox.pack_start(image, False, False, 20)
         vbox = gtk.VBox()
-        hbox.pack_start(vbox, False, False, 5)
+        hbox.pack_start(vbox, True, True, 10)
         label = gtk.Label()
         label.set_markup(mensaje)
-        vbox.pack_start(label, False, False, 15)
+        label.set_alignment(0, 0.5)
+        vbox.pack_start(label, False, False, 0)
         self.fecha = Fecha()
-        vbox.pack_start(self.fecha, False, False, 0)
+        vbox.pack_start(self.fecha, False, False, 10)
         self.hora = Hora()
-        vbox.pack_start(self.hora, False, False, 0)
-        but_salir = Button('cancelar.png', "_Cancelar")
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        vbox.pack_start(self.hora, False, False, 5)
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
+        self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
+        self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
+        self.hora.connect('enter', lambda s, w: self.but_ok.clicked())
+        self.hora.connect('escape', lambda s, w: but_salir.clicked())
+        self.set_focus(self.hora)
+
+    def iniciar(self):
+        self.show_all()
+        if self.run() == gtk.RESPONSE_OK:
+            return self.hora.get_time()
+        else:
+            return False
+
+    def hna(self, *args):
+        self.hora.set_text('--:--')
+
+    def cerrar(self, *args):
+        self.destroy()
+
+
+class Alerta_Hora(gtk.Dialog):
+    def __init__(self, titulo, imagen, mensaje):
+        super(Alerta_Hora, self).__init__(
+            flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
+        ventanas = gtk.window_list_toplevels()
+        parent = ventanas[0]
+        for v in ventanas:
+            if v.is_active():
+                parent = v
+                break
+        self.set_modal(True)
+        self.set_transient_for(parent)
+        self.set_default_size(280, 50)
+        self.set_title(titulo)
+        self.set_position(gtk.WIN_POS_CENTER)
+        self.connect("delete_event", self.cerrar)
+        hbox = gtk.HBox(False, 0)
+        self.vbox.pack_start(hbox, False, False, 20)
+        image = gtk.Image()
+        image.set_from_file('images/PNG-48/' + imagen)
+        hbox.pack_start(image, False, False, 20)
+        vbox = gtk.VBox()
+        hbox.pack_start(vbox, True, True, 10)
+        label = gtk.Label()
+        label.set_markup(mensaje)
+        label.set_alignment(0, 0.5)
+        vbox.pack_start(label, False, False, 0)
+        self.hora = Hora()
+        vbox.pack_start(self.hora, False, False, 5)
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
         self.hora.connect('enter', lambda s, w: self.but_ok.clicked())
@@ -1502,8 +1665,8 @@ class BloquearUnidad(gtk.Dialog):
         self.radio7 = gtk.RadioButton(self.radio5, 'Ambos')
         hbox.pack_start(self.radio7, False, False, 5)
         self.radio1.connect('toggled', self.toggled_tipo)
-        but_salir = Button('cancelar.png', "_Cancelar")
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
         self.hora.connect('enter', lambda s, w: self.but_ok.clicked())
@@ -1581,7 +1744,7 @@ class DesbloquearUnidad(gtk.Dialog):
         self.label = gtk.Label('No hay bloqueos activos')
         self.vbox.pack_start(self.label, False, False, 15)
         self.escribir(bloqueos)
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.but_bloquear = Button('bloqueado.png', "_Bloquear")
         self.but_bloquear.connect('clicked', self.bloquear)
         self.action_area.pack_start(self.but_bloquear)
@@ -1690,8 +1853,8 @@ class Alerta_FechaNumero(gtk.Dialog):
             self.entry.connect('ok', self.entry_ok)
             self.entry.connect('error', self.entry_error)
         vbox.pack_start(self.entry, False, False, 0)
-        but_salir = Button('cancelar.png', "_Cancelar")
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.entry.connect('activate', self.activate)
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
@@ -1758,8 +1921,8 @@ class Alerta_Dia(gtk.Dialog):
         vbox.pack_start(label, False, False, 5)
         self.dia = Fecha()
         vbox.pack_start(self.dia, False, False, 0)
-        but_salir = Button('cancelar.png', "_Cancelar")
-        but_ok = Button('aceptar.png', "_Aceptar")
+        but_salir = Button('delete.png', "_Cancelar")
+        but_ok = Button('checkmark.png', "_Aceptar")
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(but_ok, gtk.RESPONSE_OK)
         self.set_focus(but_ok)
@@ -1790,33 +1953,35 @@ class Alerta_Numero(gtk.Dialog):
         self.decimal = decimal
         self.set_modal(True)
         self.set_transient_for(parent)
-        self.set_default_size(200, 50)
+        self.set_default_size(290, 50)
         self.set_title(titulo)
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect("delete_event", self.cerrar)
         hbox = gtk.HBox(False, 0)
-        self.vbox.pack_start(hbox, False, False, 10)
+        self.vbox.pack_start(hbox, False, False, 0)
         image = gtk.Image()
         image.set_from_file('images/PNG-48/' + imagen)
-        hbox.pack_start(image, False, False, 5)
+        hbox.pack_start(image, False, False, 20)
         vbox = gtk.VBox()
-        hbox.pack_start(vbox, False, False, 15)
+        hbox.pack_start(vbox, True, True, 10)
         label = gtk.Label()
         label.set_markup(mensaje)
-        vbox.pack_start(label, False, False, 5)
+        label.set_alignment(0, 0.5)
+        vbox.pack_start(label, False, False, 15)
         if decimal:
             self.entry = Texto(digitos)
         else:
-            self.entry = Numero(digitos)
+            self.entry = Numero(digitos, null=False)
             self.entry.connect('ok', self.entry_ok)
             self.entry.connect('error', self.entry_error)
-        vbox.pack_start(self.entry, False, False, 0)
-        but_salir = Button('cancelar.png', "_Cancelar")
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        vbox.pack_start(self.entry, False, False, 10)
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.entry.connect('activate', self.activate)
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
         self.entry.set_text(default)
+        self.entry.grab_focus()
 
     def activate(self, *args):
         try:
@@ -1835,6 +2000,71 @@ class Alerta_Numero(gtk.Dialog):
     def entry_error(self, *args):
         self.but_ok.set_sensitive(False)
         self.entry.grab_focus()
+        return True
+
+    def iniciar(self):
+        self.show_all()
+        text = self.entry.get_text()
+        self.entry.select_region(0, len(text))
+        self.set_focus(self.entry)
+        if self.run() == gtk.RESPONSE_OK:
+            return self.entry.get_text()
+        else:
+            return False
+
+    def cerrar(self, *args):
+        self.destroy()
+
+
+class Alerta_Entry(gtk.Dialog):
+
+    def __init__(self, titulo, imagen, mensaje, password=False):
+        super(Alerta_Entry, self).__init__(
+            flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
+        ventanas = gtk.window_list_toplevels()
+        parent = ventanas[0]
+        print parent
+        for v in ventanas:
+            if v.is_active():
+                parent = v
+                break
+        self.set_modal(True)
+        self.set_transient_for(parent)
+        self.set_default_size(290, 50)
+        self.set_title(titulo)
+        self.set_position(gtk.WIN_POS_CENTER)
+        self.connect("delete_event", self.cerrar)
+        hbox = gtk.HBox(False, 0)
+        self.vbox.pack_start(hbox, False, False, 0)
+        image = gtk.Image()
+        image.set_from_file('images/PNG-48/' + imagen)
+        hbox.pack_start(image, False, False, 20)
+        vbox = gtk.VBox()
+        hbox.pack_start(vbox, True, True, 10)
+        label = gtk.Label()
+        label.set_markup(mensaje)
+        label.set_alignment(0, 0.5)
+        vbox.pack_start(label, False, False, 15)
+        self.entry = Texto(16)
+        vbox.pack_start(self.entry, False, False, 10)
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
+        self.entry.connect('activate', self.activate)
+        self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
+        self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
+        self.entry.grab_focus()
+
+    def activate(self, *args):
+        if self.entry.get_text() != '':
+            self.but_ok.clicked()
+
+    def entry_ok(self, *args):
+        self.but_ok.set_sensitive(True)
+
+    def entry_error(self, *args):
+        self.but_ok.set_sensitive(False)
+        self.entry.grab_focus()
+        return True
 
     def iniciar(self):
         self.show_all()
@@ -1880,8 +2110,8 @@ class Alerta_Combo(gtk.Dialog):
         self.combo = ComboBox(liststore)
         self.combo.set_lista(lista)
         vbox.pack_start(self.combo, False, False, 0)
-        but_salir = Button('cancelar.png', "_Cancelar")
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
 
@@ -1937,8 +2167,8 @@ class Alerta_Anular_Numeros(gtk.Dialog):
         self.entry2 = Numero(6)
         hbox.pack_start(label, False, False, 0)
         hbox.pack_start(self.entry2, False, False, 0)
-        but_salir = Button('cancelar.png', "_Cancelar")
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.entry2.connect('ok', self.entry_ok)
         self.entry1.connect('error', self.entry_error)
         self.entry2.connect('error', self.entry_error)
@@ -2005,8 +2235,8 @@ class Alerta_Texto(gtk.Dialog):
         self.entry = Entry()
         self.entry.set_width_chars(15)
         self.vbox.pack_start(self.entry, False, False, 0)
-        self.but_ok = Button('aceptar.png', "_Aceptar")
-        but_salir = Button('cancelar.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
+        but_salir = Button('delete.png', "_Cancelar")
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
         self.entry.connect('activate', self.entry_activate)
@@ -2060,8 +2290,8 @@ class Alerta_Entero(gtk.Dialog):
         vbox.pack_start(label, False, False, 5)
         self.entry = Entry(digitos)
         vbox.pack_start(self.entry, False, False, 0)
-        but_salir = Button('cancelar.png', "_Cancelar")
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
         self.set_focus(self.entry)
@@ -2086,11 +2316,46 @@ class Alerta_Entero(gtk.Dialog):
         self.destroy()
 
 
+class PlaceholderEntry(gtk.Entry):
+
+    placeholder = 'Username'
+    _default = False
+    visible = True
+
+    def __init__(self, *args, **kwds):
+        gtk.Entry.__init__(self, *args, **kwds)
+        self.connect('focus-in-event', self._focus_in_event)
+        self.connect('focus-out-event', self._focus_out_event)
+        self.set_visibility(self.visible)
+
+    def _focus_in_event(self, widget, event):
+        if self._default:
+            self.set_text('')
+            self.set_visibility(self.visible)
+            self.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse('black'))
+
+    def _focus_out_event(self, widget, event):
+        if gtk.Entry.get_text(self) == '':
+            self.set_text(self.placeholder)
+            self.set_visibility(True)
+            self.modify_text(gtk.STATE_NORMAL, gtk.gdk.color_parse('gray'))
+            self._default = True
+        else:
+            self.set_visibility(self.visible)
+            self._default = False
+
+    def get_text(self):
+        if self._default:
+            return ''
+        return gtk.Entry.get_text(self)
+
+
 class Login(gtk.Dialog):
 
-    def __init__(self, http):
-        super(Login, self).__init__(
-            flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
+    tokens = []
+
+    def __init__(self):
+        super(Login, self).__init__(flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT)
         ventanas = gtk.window_list_toplevels()
         parent = ventanas[0]
         for v in ventanas:
@@ -2099,101 +2364,88 @@ class Login(gtk.Dialog):
                 break
         self.user = None
         self.pw = None
-        self.sessionid = None
         self.set_modal(True)
-        self.http = http
+        self.http = Http()
         self.set_transient_for(parent)
         self.set_default_size(200, 50)
-        self.set_title('Login')
+        self.set_title('Inicie Sesión:')
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect("delete_event", self.cerrar)
         hbox = gtk.HBox(False, 0)
-        self.vbox.pack_start(hbox, False, False, 10)
+        self.vbox.pack_start(hbox, False, False, 15)
         image = gtk.Image()
         image.set_from_file('images/PNG-48/login.png')
-        hbox.pack_start(image, False, False, 5)
+        hbox.pack_start(image, False, False, 20)
         vbox = gtk.VBox()
-        hbox.pack_start(vbox, False, False, 5)
-        label = gtk.Label()
-        label.set_markup('Ingrese su usuario y contraseña')
-        vbox.pack_start(label, False, False, 5)
-        self.usuario = Entry()
-        vbox.pack_start(self.usuario, False, False, 0)
-        self.usuario.connect('activate', lambda w: self.set_focus(self.password))
-        self.password = Entry()
-        self.password.set_visibility(False)
-        vbox.pack_start(self.password, False, False, 0)
+        hbox.pack_start(vbox, True, True, 10)
+
+        self.combo = ComboBox()
+        self.combo.set_lista(self.http.dataLocal.get_empresas())
+        vbox.pack_start(self.combo, False, False, 5)
+
+        self.username = PlaceholderEntry()
+        self.username.placeholder = 'Username'
+        vbox.pack_start(self.username, False, False, 5)
+        self.username.connect('activate', lambda w: self.set_focus(self.password))
+        self.password = PlaceholderEntry()
+        self.password.placeholder = 'Password Perfil'
+        self.password.visible = False
+        vbox.pack_start(self.password, False, False, 5)
         self.password.connect('activate', lambda w: self.set_focus(self.clave))
-        self.clave = Entry()
-        self.clave.set_visibility(False)
-        vbox.pack_start(self.clave, False, False, 0)
-        self.but_aceptar = Button('aceptar.png', "_Aceptar")
+
+        self.clave = PlaceholderEntry()
+        self.clave.placeholder = 'Clave Personal'
+        self.clave.visible = False
+        vbox.pack_start(self.clave, False, False, 5)
+        self.but_aceptar = Button('checkmark.png', "_Aceptar")
         self.action_area.pack_start(self.but_aceptar, False, False, 0)
         self.but_aceptar.connect('clicked', self.comprobar)
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
         self.clave.connect('activate', self.comprobar)
-        self.set_focus(self.usuario)
+        self.set_focus(self.username)
         self.mac = str(getnode())
-        try:
-            a = os.path.abspath("outs/pdfcreator.dll")
-            archivo = open(a, 'rb')
-            content = archivo.read()
-            archivo.close()
-            js = base64.b64decode(content)
-            d = json.loads(js)
-        except:
-            js = json.dumps({})
-            content = base64.b64encode(js)
-            a = os.path.abspath("outs/pdfcreator.dll")
-            archivo = open(a, 'wb')
-            archivo.write(content)
-            archivo.close()
-        else:
-            if self.mac in d:
-                usuario, password = d[self.mac]
-                self.usuario.set_text(usuario)
-                self.password.set_text(password)
+        self.secret_key = 'S3CRE1K3Y'
+        self.show_all()
+        self.get_credentials()
+        self.username._focus_out_event(None, None)
+        self.password._focus_out_event(None, None)
+        self.clave._focus_out_event(None, None)
+
+    def get_credentials(self):
+        self.username.set_text(self.http.dataLocal.username)
+        self.password.set_text(self.http.dataLocal.password)
+        if self.http.dataLocal.empresa:
+            self.combo.hide()
+            self.set_default_size(200, 50)
 
     def comprobar(self, *args):
-        print 'LOGIN Comprobar'
-        self.user = self.usuario.get_text()
+        self.clave._focus_out_event(None, None)
+        self.user = self.username.get_text()
         self.pw = self.password.get_text()
         self.cl = self.clave.get_text()
-        self.sessionid = self.http.login(self.user, self.pw, self.cl)
-        print 'LOGIN SEND'
-        if self.sessionid:
-            try:
-                a = os.path.abspath("outs/pdfcreator.dll")
-                archivo = open(a, 'rb')
-                content = archivo.read()
-                archivo.close()
-                js = base64.b64decode(content)
-                d = json.loads(js)
-            except:
-                d = {}
-            d[self.mac] = (self.user, self.pw)
-            js = json.dumps(d)
-            content = base64.b64encode(js)
-            a = os.path.abspath("outs/pdfcreator.dll")
-            archivo = open(a, 'wb')
-            archivo.write(content)
-            archivo.close()
+        login = self.http.login(self.user, self.pw, self.cl)
+        if login:
+            self.http.set_usuario(models.Usuario(login))
             self.but_ok.clicked()
 
     def iniciar(self):
-        self.show_all()
         self.but_ok.hide_all()
         print 'LOGIN'
         if self.run() == gtk.RESPONSE_OK:
             print 'LOGIN widget'
             return True
         else:
-            print 'LOGN False'
+            self.http.reloj.cerrar()
+            print 'LOGIN False'
             return False
 
     def cerrar(self, *args):
         self.destroy()
+
+    def autologin(self):
+        self.clave.set_text('0000')
+        self.comprobar()
 
 
 class Cell(gtk.CellRendererText):
@@ -2222,23 +2474,23 @@ class Cell(gtk.CellRendererText):
 
 class CellBoleto(gtk.CellRendererText):
 
-    __gsignals__ = {'editado': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_PYOBJECT,
-        (int, str)),
-            'inicio': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_PYOBJECT,
-        (gobject.TYPE_PYOBJECT, int))}
+    __gsignals__ = {
+        'editado': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_PYOBJECT, (int, str)),
+        'inicio': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_PYOBJECT, (gobject.TYPE_PYOBJECT, int)),
+        'usar-reserva': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_PYOBJECT, (int, ))
+    }
 
     def __init__(self):
         super(CellBoleto, self).__init__()
-        self.reserva = False
-        self.inicio = False
+        self.boleto = None
+        self.inicio = None
         self.connect_after('editing-started', self.edicion)
 
     def edicion(self, cell, editable, path):
         if isinstance(editable, gtk.Entry):
-            editable.connect('key-release-event', self.key_release)
+            editable.connect('key-release-event', self.key_release, path)
             editable.connect('key-press-event', self.key_press, editable, path)
-            editable.connect_after('visibility-notify-event',
-                self.iniciar, path)
+            editable.connect_after('visibility-notify-event', self.iniciar, path)
             return True
 
     def iniciar(self, editable, event, path):
@@ -2246,19 +2498,16 @@ class CellBoleto(gtk.CellRendererText):
         editable.set_max_length(6)
         editable.select_region(3, 6)
 
-    def key_release(self, widget, event):
+    def key_release(self, widget, event, path):
         text = widget.get_text()
         l = len(text)
         if event.keyval == 65421 or event.keyval == 65293:
             # intro= 65421 return = 65293
             return True
         elif event.keyval == 65361:  # izquierda
-            if self.reserva:
-                widget.set_text(str(self.reserva).zfill(6))
-                widget.select_region(3, l)
-            else:
-                Alerta('Sin Reserva', 'error_numero.png',
-                    'No hay reserva de este boleto')
+            widget.set_text('TERMINADO')
+            self.emit('usar-reserva', int(path))
+            return True
         elif event.keyval == 65363:  # derecha
             widget.set_text(str(self.inicio))
             widget.select_region(3, l)
@@ -2444,10 +2693,11 @@ class Numero(Entry):
         'cancel': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
         ())}
 
-    def __init__(self, n):
+    def __init__(self, n, null=True):
         super(Numero, self).__init__(n)
         if n > 15:
             n = 15
+        self.null = null
         self.set_width_chars(n)
         self.connect('key-press-event', self.key_press)
         self.connect('key-release-event', self.key_release)
@@ -2457,8 +2707,8 @@ class Numero(Entry):
         if (48 <= k and k <= 57) or (65456 <= k and k <= 65465):
             # numeros
             return False
-        elif k == 65288 or k == 65535 or k == 65293 or k == 65421:
-            # backspace=65288, delete=65535, return = 65293, intro= 65421
+        elif k == 65288 or k == 65535 or k == 65293 or k == 65421 or k == 65289 or k == 65505 or k == 65506 or k == 65056:
+            # backspace=65288, delete=65535, return = 65293, intro= 65421, tab=65289, shiftL=65505, shiftR=65506, shift+tab=65056
             return False
         elif k == 65307:
             self.emit('cancel')
@@ -2474,6 +2724,8 @@ class Numero(Entry):
         txt = self.get_text()
         if txt == '':
             self.emit('error')
+            if not self.null:
+                return
         else:
             self.emit('ok')
         if event.keyval == 65293 or event.keyval == 65421:
@@ -2498,17 +2750,17 @@ class Numero(Entry):
 
 class Texto(Entry):
 
-    def __init__(self, n, up=True):
+    def __init__(self, n, up=True, DIR_TAB=True):
         super(Texto, self).__init__(n)
-        if n > 45:
-            n = 45
-        elif n > 30:
+        if n > 30:
             n = 30
+        elif n > 20:
+            n = 20
         elif n > 15:
             n = 15
         self.set_width_chars(n)
         self.up = up
-        self.connect('key-release-event', self.on_activate)
+        self.connect('key-press-event', self.on_activate)
 
     def get(self):
         txt = unicode(self.get_text(), 'utf-8')
@@ -2537,6 +2789,31 @@ class ToolButton(gtk.ToolButton):
         self.set_tooltip_text(texto)
         self.connect('clicked', funcion)
 
+
+class ToggleToolButton(gtk.ToggleButton):
+
+    def __init__(self, texto, imagen, funcion):
+        super(ToggleToolButton, self).__init__()
+        self.hbox = gtk.HBox(False, 0)
+        if not imagen is None:
+            self.imagen = gtk.Image()
+            self.imagen.set_from_file('images/toolbar/' + imagen)
+            self.hbox.pack_start(self.imagen, True, True, 0)
+        self.set_tooltip_text(texto)
+        # if not string is None:
+        #     self.label = gtk.Label()
+        #     self.label.set_markup(string)
+        #     self.label.set_use_underline(True)
+        #     self.hbox.pack_start(self.label, True, True, 0)
+        self.add(self.hbox)
+        self.props.relief = gtk.RELIEF_NONE
+        # self.set_tooltip_text(texto)
+        if funcion:
+            self.connect('clicked', funcion)
+
+
+
+
 class Toolbar(gtk.HBox):
 
     def __init__(self, herramientas):
@@ -2550,6 +2827,17 @@ class Toolbar(gtk.HBox):
     def add_button(self, texto, imagen, funcion):
         b = ToolButton(texto, imagen, funcion)
         self.pack_start(b, False, False, 0)
+        return b
+
+    def add_button_end(self, texto, imagen, funcion):
+        b = ToolButton(texto, imagen, funcion)
+        self.pack_end(b, False, False, 0)
+        return b
+
+    def add_toggle_button(self, texto, imagen, funcion):
+        b = ToggleToolButton(texto, imagen, funcion)
+        self.pack_start(b, False, False, 0)
+        return b
 
     def set_imagen_label(self, i, imagen, label):
         b = self.buttons[i]
@@ -2655,6 +2943,15 @@ class TreeViewId(Frame):
         self.scroll = gtk.ScrolledWindow()
         self.add(self.scroll)
         self.scroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.treeview = TreeView(gtk.ListStore(str))
+        self.set_columnas(columnas)
+        self.treeview.connect('row-activated', self.activated)
+        self.scroll.add(self.treeview)
+
+    def get_model(self):
+        return self.treeview.get_model()
+
+    def set_columnas(self, columnas):
         liststore = []
         self.columnas = columnas
         for i, c in enumerate(columnas):
@@ -2663,14 +2960,24 @@ class TreeViewId(Frame):
             else:
                 liststore.append(str)
         liststore.append(gobject.TYPE_INT64)
-        self.treeview = TreeView(gtk.ListStore(str))
-        print titulo
         self.set_liststore(liststore)
-        self.treeview.connect('row-activated', self.activated)
-        self.scroll.add(self.treeview)
+
+    def set_columnas_only(self, columnas):
+        liststore = []
+        self.columnas = columnas
+        for i, c in enumerate(columnas):
+            liststore.append(str)
+        self.set_liststore(liststore)
+
+    def set_columnas_object(self, columnas):
+        liststore = []
+        self.columnas = columnas
+        for i, c in enumerate(columnas):
+            liststore.append(str)
+        liststore.append(gobject.TYPE_PYOBJECT)
+        self.set_liststore(liststore)
 
     def set_liststore(self, liststore):
-        print self.columnas, liststore
         cols = self.treeview.get_columns()
         for c in cols:
             self.treeview.remove_column(c)
@@ -2685,15 +2992,32 @@ class TreeViewId(Frame):
                 tvcolumn = TreeViewColumn(c)
                 tvcolumn.pack_start(cell, True)
                 tvcolumn.add_attribute(cell, 'pixbuf', i)
+            elif self.liststore[i] == bool:
+                cell = gtk.CellRendererToggle()
+                tvcolumn = TreeViewColumn(c)
+                tvcolumn.pack_start(cell, True)
+                tvcolumn.add_attribute(cell, 'active', i)
+            elif self.liststore[i] == gobject.TYPE_PYOBJECT:
+                pass
             else:
-                print self.liststore[i]
                 cell = gtk.CellRendererText()
                 tvcolumn = TreeViewColumn(c)
                 tvcolumn.pack_start(cell, True)
                 tvcolumn.set_attributes(cell, markup=i)
+            if i == 0:
+                tvcolumn.set_expand(True)
             self.treeview.append_column(tvcolumn)
             tvcolumn.encabezado()
 
+
+    def activated(self, *args):
+        try:
+            path, column = self.treeview.get_cursor()
+            self.path = int(path[0])
+            row = self.model[path]
+        except:
+            return False
+        self.emit('activado', row)
 
     def activated(self, *args):
         try:
@@ -2730,6 +3054,9 @@ class TreeViewId(Frame):
         print 'Error', nombre, _id, texto
         return False
 
+    def set_size_request(self, x, y):
+        self.scroll.set_size_request(x,  y)
+
 
 class Alerta_TreeView(gtk.Dialog):
 
@@ -2749,25 +3076,39 @@ class Alerta_TreeView(gtk.Dialog):
         self.set_title(titulo)
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect("delete_event", self.cerrar)
-        label = gtk.Label()
-        label.set_markup(mensaje)
-        self.vbox.pack_start(label, False, False, 10)
+        self.mensaje = mensaje
+        if mensaje:
+            self.label = gtk.Label()
+            self.label.set_markup(mensaje)
+            self.background = gtk.EventBox()
+            self.background.add(self.label)
+            self.vbox.pack_start(self.background, False, False, 10)
         self.treeview = TreeViewId(frame, cabeceras)
         self.vbox.pack_start(self.treeview)
         if liststore:
-            self.treeview.set_liststore(listore)
+            self.treeview.set_liststore(liststore)
         self.treeview.escribir(tabla)
-        but_salir = Button('cancelar.png', "_Cancelar")
-        self.but_ok = Button('aceptar.png', "_Aceptar")
+        but_salir = Button('delete.png', "_Cancelar")
+        self.but_ok = Button('checkmark.png', "_Aceptar")
         self.add_action_widget(but_salir, gtk.RESPONSE_CANCEL)
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
         if default:
             self.set_focus(self.but_ok)
         else:
             self.set_focus(but_salir)
+        self.show_all()
+
+    def set_background(self, color):
+        self.background.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse(color))
+
+    def set_text_color(self, color):
+        self.label.set_markup('<span color="%s">%s</span>' % (color, self.mensaje))
+
+    def set_mensaje(self, text):
+        self.mensaje = text
+        self.label.set_markup(text)
 
     def iniciar(self):
-        self.show_all()
         if self.run() == gtk.RESPONSE_OK:
             return True
         else:
@@ -2787,6 +3128,7 @@ class Notebook(gtk.Notebook):
         self.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse('#e5e8e8'))
         self.modify_bg(gtk.STATE_SELECTED, gtk.gdk.color_parse('#f8fbfc'))
         self.modify_bg(gtk.STATE_PRELIGHT, gtk.gdk.color_parse('#e5f1f4'))
+
 
 class Statusbar(gtk.Label):
 
@@ -2834,17 +3176,21 @@ class Configuracion(gtk.Dialog):
                 break
         self.set_modal(True)
         self.set_transient_for(parent)
-        self.set_default_size(200, 50)
+        self.set_default_size(150, 50)
         self.set_title('Configuración')
         self.set_position(gtk.WIN_POS_CENTER)
         self.connect("delete_event", self.cerrar)
         frame = Frame('CONFIGURACIÓN DE TICKETERA')
         frame.set_property('shadow-type', gtk.SHADOW_OUT)
-        self.vbox.pack_start(frame, False, False, 10)
+        self.vbox.pack_start(frame, False, False, 5)
         vbox = gtk.VBox(False, 10)
+        hbox = gtk.HBox(True, 0)
         frame.add(vbox)
         tabla = gtk.Table(2, 7)
-        vbox.pack_start(tabla, False, False, 5)
+        # tabla.set_col_spacings(5)
+        tabla.set_row_spacings(5)
+        vbox.pack_start(hbox, False, False, 10)
+        hbox.pack_start(tabla, True, True, 10)
         self.lista = [('LPT1', 1), ('LPT2', 2), ('LPT3', 3)]
         self.lista_tarjeta = []
         i = 3
@@ -2857,18 +3203,26 @@ class Configuracion(gtk.Dialog):
                 i += 1
                 self.lista.append((p[2], i))
                 self.lista_tarjeta.append((p[2], i))
-        tabla.attach(gtk.Label('Ticketera por Defecto: '), 0, 1, 0, 1)
+        label = gtk.Label('Ticketera por Defecto: ')
+        label.set_alignment(0, 0.5)
+        tabla.attach(label, 0, 1, 0, 1, gtk.FILL, gtk.EXPAND)
         self.combo = ComboBox()
         self.combo.set_lista(self.lista)
         tabla.attach(self.combo, 1, 2, 0, 1)
-        tabla.attach(gtk.Label('Ticketera SUNAT: '), 0, 1, 1, 2)
+        label = gtk.Label('Ticketera SUNAT: ')
+        label.set_alignment(0, 0.5)
+        tabla.attach(label, 0, 1, 1, 2, gtk.FILL, gtk.EXPAND)
         self.comboSunat = ComboBox()
         self.comboSunat.set_lista(self.lista)
         tabla.attach(self.comboSunat, 1, 2, 1, 2)
-        tabla.attach(gtk.Label('Imprimir con Formato'), 0, 1, 2, 3)
+        label = gtk.Label('Imprimir con Formato')
+        label.set_alignment(0, 0.5)
+        tabla.attach(label, 0, 1, 2, 3)
         self.formato = gtk.CheckButton()
         tabla.attach(self.formato, 1, 2, 2, 3)
-        tabla.attach(gtk.Label('Espacios al final del ticket'), 0, 1, 3, 4)
+        label = gtk.Label('Espacios al final del ticket')
+        label.set_alignment(0, 0.5)
+        tabla.attach(label, 0, 1, 3, 4)
         self.espacios = Numero(2)
         tabla.attach(self.espacios, 1, 2, 3, 4)
         self.radio_sin_corte = gtk.RadioButton(None, 'Sin Corte de Papel')
@@ -2882,23 +3236,63 @@ class Configuracion(gtk.Dialog):
         button = Button(None, 'Probar Ticketera')
         button.connect('clicked', self.probar)
         tabla.attach(button, 0, 2, 7, 8)
+
         frame = Frame('CONFIGURACIÓN DE IMPRESORA')
         frame.set_property('shadow-type', gtk.SHADOW_IN)
         self.vbox.pack_start(frame, False, False, 0)
         vbox = gtk.VBox(False, 0)
         frame.add(vbox)
-        hbox = gtk.HBox(False, 0)
+        hbox = gtk.HBox(False, 10)
         vbox.pack_start(hbox, False, False, 10)
-        hbox.pack_start(gtk.Label('Impresora de Tarjetas'), False, False, 5)
+        label = gtk.Label('Impresora de Tarjetas')
+        label.set_alignment(0, 0.5)
+        hbox.pack_start(label, False, False, 10)
         self.combo_tarjetas = ComboBox()
-        hbox.pack_start(self.combo_tarjetas, False, False, 0)
+        hbox.pack_start(self.combo_tarjetas, True, True, 10)
         self.combo_tarjetas.set_lista(self.lista_tarjeta)
+        button = Button(None, 'Probar Impresora')
+        button.connect('clicked', self.probar_impresora)
+        hbox = gtk.HBox(False, 0)
+        vbox.pack_start(hbox)
+        hbox.pack_start(button, True, True, 10)
+
+        frame = Frame('CONFIGURACIÓN DEL NAVEGADOR WEB')
+        frame.set_property('shadow-type', gtk.SHADOW_IN)
+        self.vbox.pack_start(frame, False, False, 0)
+        vbox = gtk.VBox(False, 0)
+        frame.add(vbox)
+        hbox = gtk.HBox(False, 10)
+        vbox.pack_start(hbox, False, False, 10)
+        label = gtk.Label('Navegador')
+        label.set_alignment(0, 0.5)
+        hbox.pack_start(label, False, False, 10)
+        self.combo_browsers = ComboBox()
+        hbox.pack_start(self.combo_browsers, True, True, 10)
+        self.lista_browsers = [
+            ('chrome', 1),
+            ('firefox', 2),
+            ('opera', 3),
+            ('edge', 4),
+            ('windows-default', 5)
+        ]
+        self.combo_browsers.set_lista(self.lista_browsers)
+        self.combo_browsers.connect('changed', self.update_browser)
+        self.entry_browser = Texto(256)
+        hbox = gtk.HBox(False, 0)
+        label = gtk.Label('Ubicación:')
+        vbox.pack_start(hbox, False, False, 0)
+        hbox.pack_start(label, False, False, 10)
+        hbox.pack_start(self.entry_browser, True, True, 0)
+        button = Button('buscar.png', None, 16, 'Buscar ejecutable')
+        button.connect('clicked', self.choose_file)
+        hbox.pack_start(button, False, False, 10)
+
         but_excel = Button('excel.png', 'XLS')
         self.action_area.pack_start(but_excel, False, False, 0)
         but_excel.connect('clicked', self.excel_dialog)
-        self.but_ok = Button('aceptar.png', "Aceptar")
+        self.but_ok = Button('guardar.png', "Guardar")
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
-        self.but_salir = Button('cancelar.png', "_Salir")
+        self.but_salir = Button('delete.png', "_Salir")
         self.add_action_widget(self.but_salir, gtk.RESPONSE_CANCEL)
         self.set_focus(self.but_salir)
         self.iniciar()
@@ -2930,6 +3324,19 @@ class Configuracion(gtk.Dialog):
             self.radio_sin_corte.set_active(True)
         self.formato.set_active(config['formato'])
         self.espacios.set_text(str(config['lineas_final']))
+
+        self.combo_browsers.set_text(self.http.config.browser)
+        if self.http.config.browser == 'chrome':
+            self.entry_browser.set_text(self.http.config.chrome)
+        elif self.http.config.browser == 'firefox':
+            self.entry_browser.set_text(self.http.config.firefox)
+        elif self.http.config.browser == 'opera':
+            self.entry_browser.set_text(self.http.config.opera)
+        elif self.http.config.browser == 'edge':
+            self.entry_browser.set_text(self.http.config.edge)
+        else:
+            self.combo_browsers.set_text('windows-default')
+
         if self.run() == gtk.RESPONSE_OK:
             puerto = self.combo.get_text()
             sunat = self.comboSunat.get_text()
@@ -2939,7 +3346,7 @@ class Configuracion(gtk.Dialog):
             elif self.radio_sin_corte.get_active():
                 corte = False
             else:
-                 corte = self.entry_corte.get_text()
+                corte = self.entry_corte.get_text()
             self.ticketera.config['tarjeta'] = tarjeta
             self.ticketera.config['puerto'] = puerto
             self.ticketera.config['sunat'] = sunat
@@ -2948,12 +3355,54 @@ class Configuracion(gtk.Dialog):
             self.ticketera.config['lineas_final'] = self.espacios.get_int()
             self.ticketera.guardar_config()
             self.ticketera.set_config()
+
+            browser = self.combo_browsers.get_text()
+            if browser == 'chrome':
+                self.http.config.chrome = self.entry_browser.get_text()
+            elif browser == 'firefox':
+                self.http.config.firefox = self.entry_browser.get_text()
+            elif browser == 'opera':
+                self.http.config.opera = self.entry_browser.get_text()
+            elif browser == 'edge':
+                self.http.config.edge = self.entry_browser.get_text()
+            self.http.config.save()
             return True
         else:
             return False
 
+    def update_browser(self, *args):
+        self.entry_browser.set_sensitive(True)
+        self.http.config.browser = self.combo_browsers.get_text()
+        if self.http.config.browser == 'chrome':
+            browser = self.http.config.chrome
+        elif self.http.config.browser == 'firefox':
+            browser = self.http.config.firefox
+        elif self.http.config.browser == 'opera':
+            browser = self.http.config.opera
+        elif self.http.config.browser == 'edge':
+            browser = self.http.config.edge
+        else:
+            browser = ''
+            self.entry_browser.set_sensitive(False)
+        self.entry_browser.set_text(browser)
+
+    def choose_file(self, *args):
+        dlg = gtk.FileChooserDialog(title='Encuentre la ruta al Navegador', parent=self,
+                                    action=gtk.FILE_CHOOSER_ACTION_OPEN,
+                                    buttons=('Seleccionar', gtk.RESPONSE_OK, 'Cancelar', gtk.RESPONSE_CANCEL),
+                                    backend=None)
+        response = dlg.run()
+        print('response', response)
+        if response == gtk.RESPONSE_OK:
+            if dlg.get_filename():
+                self.entry_browser.set_text(dlg.get_filename())
+        dlg.destroy()
+
     def probar(self, *args):
         self.ticketera.probar()
+
+    def probar_impresora(self, *args):
+        Impresion.Test()
 
     def excel_dialog(self, *args):
         dialog = Excel_Dialog(self.http)
@@ -3022,9 +3471,9 @@ class Excel_Dialog(gtk.Dialog):
         tabla.attach(gtk.Label('Fila Final'), 0, 1, 5, 6)
         self.final = Numero(6)
         tabla.attach(self.final, 1, 2, 5, 6)
-        self.but_ok = Button('aceptar.png', "Aceptar")
+        self.but_ok = Button('checkmark.png', "Aceptar")
         self.add_action_widget(self.but_ok, gtk.RESPONSE_OK)
-        self.but_salir = Button('cancelar.png', "_Salir")
+        self.but_salir = Button('delete.png', "_Salir")
         self.add_action_widget(self.but_salir, gtk.RESPONSE_CANCEL)
         self.set_focus(self.but_salir)
         self.iniciar()
@@ -3122,16 +3571,6 @@ class Excel_Dialog(gtk.Dialog):
     def cerrar(self, *args):
         self.destroy()
 
-if __name__ == '__main__':
-    w = gtk.Window()
-    h = Hora()
-    h.set_time(datetime.time(0, 0))
-    w.add(h)
-    w.show_all()
-    l = Login(2)
-    l.iniciar()
-    gtk.main()
-
 gtk.rc_parse_string("""
     style "enruta-treestyle" {
         GtkTreeView::even_row_color = "#e5f1f4"
@@ -3162,4 +3601,22 @@ gtk.rc_parse_string("""
     widget "*.vueltas-treeview" style "vueltas-treestyle"
 """)
 gobject.type_register(Cell)
-# gtk.rc_parse('images/theme/main.rc')
+
+
+def currency(entero):
+    return "%.2f" % (entero / 100.)
+
+
+def quantity(entero):
+    return "%.3f" % (entero / 1000.)
+
+
+
+
+if __name__ == '__main__':
+    a = Alerta_FechaNumero('Titulo', 'money.png', 'Detalle de prueba\nFASDF')
+    # from Http import Http
+    # http = Http([])
+    # a = Configuracion(http)
+    a.show_all()
+    gtk.main()

@@ -41,11 +41,13 @@ def enable_tracing(enable):
 
 def _trace_function_call(logger, fname, *args, **named_args):
     logger.debug(
+                # TODO: check if 'f' is a method or a free function
                 fname + '(' + \
                 ', '.join((str(val) for val in args)) + \
                 ', '.join((name + '=' + str(val) for name, val in named_args.items())) + ')'
             )
 
+# decorator for methods calls tracing
 def methodtrace(logger):
     def decorator_logging(f):
         if not _enable_tracing:

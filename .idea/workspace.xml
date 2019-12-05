@@ -1,19 +1,179 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/Widgets.py" line="2994" mnemonic="8" />
-  </component>
   <component name="ChangeListManager">
     <list default="true" id="aa5c3d0d-091e-4287-80e4-6b134f8d8211" name="Default" comment="Version 5.87&#10;fondos multiples">
+      <change afterPath="$PROJECT_DIR$/CajaCentralizada.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cobranza.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/DataLocal.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Http.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Reloj.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/images/theme/adwaita.rc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/webbrowser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Chrome.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chrome.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Impresion.py" beforeDir="false" afterPath="$PROJECT_DIR$/Impresion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Modulos.py" beforeDir="false" afterPath="$PROJECT_DIR$/Modulos.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Output/TCONTUR160526update.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Output/TCONTUR160527update.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Output/TCONTUR160715update.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Output/TCONTUR160908.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Output/TCONTUR170111.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Output/TCONTUR170111update.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Output/TCONTUR170727update.exe" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Principal.py" beforeDir="false" afterPath="$PROJECT_DIR$/Principal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Principal.py.save" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Salidas.py" beforeDir="false" afterPath="$PROJECT_DIR$/Salidas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sonido.py" beforeDir="false" afterPath="$PROJECT_DIR$/Sonido.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Widgets.py" beforeDir="false" afterPath="$PROJECT_DIR$/Widgets.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/edit.png" beforeDir="false" afterPath="$PROJECT_DIR$/edit.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/escpos/escpos.py" beforeDir="false" afterPath="$PROJECT_DIR$/escpos/escpos.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/abajo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/abajo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/actualizar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/actualizar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/bloqueado.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/buscar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/buscar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/buscar_personal.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/buscar_personal.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/castigado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/castigado.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/conectado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/conectado.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/desconectado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/desconectado.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/fondo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/fondo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/grifo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/grifo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/guardar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/guardar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/imprimir.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/imprimir.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/no_bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/no_bloqueado.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/no_castigado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/no_castigado.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/relojes.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/relojes.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-16/warning.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/warning.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/abajo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/abajo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/aceptar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/aceptar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/actualizar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/actualizar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/anular.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/anular.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/arriba.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/arriba.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/atras.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/atras.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/bloqueado.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/buscar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/buscar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/caja.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/caja.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/calendario.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/calendario.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/cancelar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/cancelar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/castigos.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/castigos.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/central.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/central.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/chrome.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/chrome.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/confirmar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/confirmar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/credito.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/credito.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/cuenta.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/cuenta.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/derecha.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/derecha.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/despachar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/despachar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/deudas.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/deudas.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/dinero.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/dinero.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/editar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/editar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/error.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/error.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/excel.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/excel.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/excluir.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/excluir.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/flota.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/flota.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/fondo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/fondo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/fondo_multiple.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/fondo_multiple.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/grifo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/grifo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/guardar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/guardar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/imprimir.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/imprimir.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/izquierda.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/izquierda.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/liquidar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/liquidar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/llamar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/llamar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/mantenimiento.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/mantenimiento.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/no_bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/no_bloqueado.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/nuevo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/nuevo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/odometro.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/odometro.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/personal.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/personal.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/relojes.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/relojes.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/reporte.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/reporte.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/salir.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/salir.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/servicio.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/servicio.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/siguiente.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/siguiente.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/stock_rojo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/stock_rojo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/stock_verde.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/stock_verde.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/stop.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/stop.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/transbordo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/transbordo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-24/video.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/video.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/SMS.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/abajo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/abajo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/actualizar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/actualizar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/anular.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/anular.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/arriba.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/arriba.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/bateria.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/bateria.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/bloqueado.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/buscar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/buscar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/caja.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/caja.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/caja_central.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/caja_central.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/calendario.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/calendario.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/cambiar_hora.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/cambiar_hora.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/cambiar_padron.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/cambiar_padron.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/cambiar_volada.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/cambiar_volada.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/castigos.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/castigos.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/chrome.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/chrome.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/corteruta.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/corteruta.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/credito.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/credito.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/cuenta.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/cuenta.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/cuidado_hora.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/cuidado_hora.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/dar_prioridad.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/dar_prioridad.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/dinero.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/dinero.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/editar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/editar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/eliminar_tarjeta.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/eliminar_tarjeta.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/error.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/error.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/error_dialogo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/error_dialogo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/error_numero.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/error_numero.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/escape.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/escape.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/falta_escoger.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/falta_escoger.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/fin_de_ruta.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/fin_de_ruta.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/fondo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/fondo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/grifo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/grifo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/imprimir.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/imprimir.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/info.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/info.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/internet.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/internet.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/lista_transacciones.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/lista_transacciones.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/llamada.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/llamada.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/login.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/login.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/no_bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/no_bloqueado.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/panico.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/panico.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/personal.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/personal.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/quitar_prioridad.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/quitar_prioridad.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/recibo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/recibo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/recibo_monedas.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/recibo_monedas.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/regresar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/regresar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/servicio.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/servicio.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/singps.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/singps.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/sonido.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/sonido.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/terminal_recibo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/terminal_recibo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/texto.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/texto.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/transbordo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/transbordo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/PNG-48/warning.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/warning.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/toolbar/actualizar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/actualizar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/toolbar/buscar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/buscar.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/toolbar/caja_central.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/caja_central.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/toolbar/chrome.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/chrome.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/toolbar/dinero.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/dinero.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/toolbar/flota.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/flota.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/toolbar/grifo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/grifo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/toolbar/login.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/login.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/toolbar/mantenimiento.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/mantenimiento.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/toolbar/salidas.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/salidas.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outs/config" beforeDir="false" afterPath="$PROJECT_DIR$/outs/config" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outs/imagen.png" beforeDir="false" afterPath="$PROJECT_DIR$/outs/imagen.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outs/impresion.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/outs/impresion.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outs/impresion.txt" beforeDir="false" afterPath="$PROJECT_DIR$/outs/impresion.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outs/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/outs/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outs/pdfcreator.dll" beforeDir="false" afterPath="$PROJECT_DIR$/outs/pdfcreator.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outs/printer" beforeDir="false" afterPath="$PROJECT_DIR$/outs/printer" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outs/reporte.xls" beforeDir="false" afterPath="$PROJECT_DIR$/outs/reporte.xls" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/outs/root.dll" beforeDir="false" afterPath="$PROJECT_DIR$/outs/root.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outs/ticket.lpt" beforeDir="false" afterPath="$PROJECT_DIR$/outs/ticket.lpt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outs/ticket.lst" beforeDir="false" afterPath="$PROJECT_DIR$/outs/ticket.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outs/ticket.txt" beforeDir="false" afterPath="$PROJECT_DIR$/outs/ticket.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/_debug.py" beforeDir="false" afterPath="$PROJECT_DIR$/usb/_debug.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/backend/openusb.py" beforeDir="false" afterPath="$PROJECT_DIR$/usb/backend/openusb.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/usb/core.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wxpython.py" beforeDir="false" afterPath="$PROJECT_DIR$/wxpython.py" afterDir="false" />
     </list>
-    <ignored path="Despacho.iws" />
-    <ignored path=".idea/workspace.xml" />
-    <ignored path=".idea/dataSources.local.xml" />
-    <ignored path=".idea/" />
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,8 +181,9 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/Despacho$Modulos.coverage" NAME="Modulos Coverage Results" MODIFIED="1469033396056" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Despacho$Principal.coverage" NAME="Principal Coverage Results" MODIFIED="1550773227328" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Despacho$Impresion.coverage" NAME="Impresion Coverage Results" MODIFIED="1513779251502" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Despacho$Cobranza.coverage" NAME="Cobranza Coverage Results" MODIFIED="1553552593697" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Despacho$Principal.coverage" NAME="Principal Coverage Results" MODIFIED="1553628903162" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Despacho$Impresion.coverage" NAME="Impresion Coverage Results" MODIFIED="1552058231293" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -38,244 +199,47 @@
   <component name="FavoritesManager">
     <favorites_list name="Despacho" />
   </component>
-  <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5">
-      <split-first>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/outs/config">
-              <provider selected="true" editor-type-id="text-editor" />
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/Salidas.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="585">
-                  <caret line="243" column="25" selection-start-line="243" selection-start-column="25" selection-end-line="243" selection-end-column="25" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file:///usr/lib/python2.7/webbrowser.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="192">
-                  <caret line="17" column="64" selection-start-line="17" selection-start-column="64" selection-end-line="17" selection-end-column="64" />
-                  <folding>
-                    <element signature="e#123#132#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/Impresion.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-544">
-                  <caret line="750" column="26" lean-forward="true" selection-start-line="750" selection-start-column="26" selection-end-line="750" selection-end-column="26" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/Chrome.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="3120">
-                  <caret line="197" column="16" selection-start-line="197" selection-start-column="8" selection-end-line="197" selection-end-column="16" />
-                  <folding>
-                    <element signature="e#0#10#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/outs/root.dll">
-              <provider selected="true" editor-type-id="text-editor">
-                <state>
-                  <caret column="10" selection-start-column="10" selection-end-column="10" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/Widgets.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="9248">
-                  <caret line="578" column="8" selection-start-line="578" selection-start-column="8" selection-end-line="578" selection-end-column="8" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/Sonido.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="752">
-                  <caret line="50" column="21" selection-start-line="50" selection-start-column="21" selection-end-line="50" selection-end-column="21" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/Modulos.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="208">
-                  <caret line="9753" column="37" lean-forward="true" selection-start-line="9753" selection-start-column="37" selection-end-line="9753" selection-end-column="37" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file:///usr/lib/python2.7/decimal.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="61920">
-                  <caret line="3871" selection-start-line="3871" selection-end-line="3871" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-first>
-      <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/Principal.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="256">
-                  <caret line="31" column="13" selection-start-line="31" selection-start-column="13" selection-end-line="31" selection-end-column="13" />
-                  <folding>
-                    <element signature="e#45#55#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-second>
-    </splitter>
-  </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>Grifo</find>
-      <find>Deudas</find>
-      <find>pagar-deuda</find>
-      <find>Deudas(</find>
-      <find>self.config</find>
-      <find>Alerta_SINO</find>
-      <find>Pagos(</find>
-      <find>Nueva Factura</find>
-      <find>Cobrar Unidad</find>
-      <find>Twist(</find>
-      <find>self.fondo_multiple</find>
-      <find>Http(</find>
-      <find>self.fondos</find>
-      <find>getFon</find>
-      <find>Fondo</find>
-      <find>getFondos</find>
-      <find>http</find>
-      <find>'seriacion'</find>
-      <find>self.datos</find>
-      <find>getSer</find>
-      <find>Fondo(</find>
-      <find>def load</find>
-      <find>llave</find>
-      <find>getDatos</find>
-      <find>Factura(</find>
-      <find>self.cerrar</find>
-      <find>pagar_todo</find>
-      <find>reporte.png</find>
-      <find>ticket</find>
-      <find>'ticket</find>
-    </findStrings>
-  </component>
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="IdeDocumentHistory">
-    <option name="CHANGED_PATHS">
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
       <list>
-        <option value="$PROJECT_DIR$/escpos/escpos.py" />
-        <option value="$PROJECT_DIR$/usb/backend/openusb.py" />
-        <option value="$PROJECT_DIR$/usb/core.py" />
-        <option value="$PROJECT_DIR$/usb/_debug.py" />
-        <option value="$PROJECT_DIR$/wxpython.py" />
-        <option value="$PROJECT_DIR$/outs/ticket.txt" />
-        <option value="$PROJECT_DIR$/outs/printer" />
-        <option value="$PROJECT_DIR$/images/theme/dark.rc" />
-        <option value="$PROJECT_DIR$/images/theme/main.rc" />
-        <option value="$PROJECT_DIR$/Chrome.py" />
-        <option value="$PROJECT_DIR$/Widgets.py" />
-        <option value="$PROJECT_DIR$/Principal.py.save" />
-        <option value="$PROJECT_DIR$/root.dll" />
-        <option value="$PROJECT_DIR$/Sonido.py" />
-        <option value="$PROJECT_DIR$/Salidas.py" />
-        <option value="$PROJECT_DIR$/dependencies.sh" />
-        <option value="$PROJECT_DIR$/Impresion.py" />
-        <option value="$PROJECT_DIR$/Modulos.py" />
-        <option value="$PROJECT_DIR$/Principal.py" />
-        <option value="$PROJECT_DIR$/outs/root.dll" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="989" />
-    <option name="y" value="27" />
-    <option name="width" value="921" />
-    <option name="height" value="1053" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="MERGE" />
   </component>
-  <component name="ProjectInspectionProfilesVisibleTreeState">
-    <entry key="Project Default">
-      <profile-state>
-        <expanded-state>
-          <State>
-            <id />
-          </State>
-        </expanded-state>
-        <selected-state>
-          <State>
-            <id>AngularJS</id>
-          </State>
-        </selected-state>
-      </profile-state>
-    </entry>
-  </component>
+  <component name="ProjectId" id="1OU9pvh8Fn89gxwNT2uut4SfuOh" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
-  <component name="ProjectView">
-    <navigator proportions="" version="1">
-      <foldersAlwaysOnTop value="true" />
-    </navigator>
-    <panes />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="SONARLINT_ANALYSIS_RESULTS_SCOPE" value="VCS changed files" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="js-jscs-nodeInterpreter" value="/usr/bin/node" />
     <property name="js.eslint.eslintPackage" value="" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/.idea" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.path.for.package.tslint" value="project" />
-    <property name="node.js.selected.package.tslint" value="" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_interpreter_path" value="node" />
+    <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/images" />
     </key>
-  </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
   </component>
   <component name="RunManager" selected="Python.Principal">
     <configuration default="true" type="tests" factoryName="Attests">
@@ -298,7 +262,7 @@
       <option name="USE_PATTERN" value="false" />
       <method />
     </configuration>
-    <configuration name="Impresion" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="CajaCentralizada" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Despacho" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -311,7 +275,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Impresion.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/CajaCentralizada.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -320,7 +284,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Modulos" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="Chrome" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Despacho" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -333,7 +297,29 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Modulos.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Chrome.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Cobranza" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Despacho" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Cobranza.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -356,6 +342,28 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Principal.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Widgets" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Despacho" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Widgets.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -421,17 +429,33 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.CajaCentralizada" />
+      <item itemvalue="Python.Chrome" />
+      <item itemvalue="Python.Cobranza" />
       <item itemvalue="Python.Principal" />
-      <item itemvalue="Python.Modulos" />
-      <item itemvalue="Python.Impresion" />
+      <item itemvalue="Python.Widgets" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.Principal" />
-        <item itemvalue="Python.Impresion" />
-        <item itemvalue="Python.Modulos" />
+        <item itemvalue="Python.Cobranza" />
+        <item itemvalue="Python.CajaCentralizada" />
+        <item itemvalue="Python.Widgets" />
+        <item itemvalue="Python.Chrome" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -448,7 +472,226 @@
       <workItem from="1550242379278" duration="1474000" />
       <workItem from="1550317803838" duration="3482000" />
       <workItem from="1550591119789" duration="29151000" />
-      <workItem from="1550750569962" duration="5916000" />
+      <workItem from="1550750569962" duration="6176000" />
+      <workItem from="1550852294862" duration="9196000" />
+      <workItem from="1551098166540" duration="3975000" />
+      <workItem from="1551184861881" duration="4175000" />
+      <workItem from="1551270163355" duration="6947000" />
+      <workItem from="1551353962066" duration="3039000" />
+      <workItem from="1551448702811" duration="1190000" />
+      <workItem from="1551530112653" duration="592000" />
+      <workItem from="1551614674931" duration="592000" />
+      <workItem from="1551708769743" duration="1528000" />
+      <workItem from="1551798855165" duration="598000" />
+      <workItem from="1551862118936" duration="595000" />
+      <workItem from="1551882756788" duration="1226000" />
+      <workItem from="1551935921781" duration="594000" />
+      <workItem from="1551961604879" duration="1397000" />
+      <workItem from="1552064287562" duration="578000" />
+      <workItem from="1552084546719" duration="596000" />
+      <workItem from="1552128988022" duration="597000" />
+      <workItem from="1552330535528" duration="585000" />
+      <workItem from="1552399101528" duration="599000" />
+      <workItem from="1552402873473" duration="1867000" />
+      <workItem from="1552487538884" duration="1823000" />
+      <workItem from="1552576280660" duration="596000" />
+      <workItem from="1552662442384" duration="1531000" />
+      <workItem from="1552730659292" duration="1890000" />
+      <workItem from="1552782182646" duration="629000" />
+      <workItem from="1552919322345" duration="1295000" />
+      <workItem from="1552972768058" duration="599000" />
+      <workItem from="1553005269659" duration="591000" />
+      <workItem from="1553094037649" duration="4343000" />
+      <workItem from="1553178106297" duration="11521000" />
+      <workItem from="1553265998367" duration="7073000" />
+      <workItem from="1553341169438" duration="599000" />
+      <workItem from="1553518255849" duration="596000" />
+      <workItem from="1553542637802" duration="9946000" />
+      <workItem from="1553610977681" duration="607000" />
+      <workItem from="1553696416175" duration="565000" />
+      <workItem from="1553697930881" duration="8076000" />
+      <workItem from="1553771038576" duration="24188000" />
+      <workItem from="1553868797803" duration="11267000" />
+      <workItem from="1553950845579" duration="599000" />
+      <workItem from="1554000578041" duration="598000" />
+      <workItem from="1554129509808" duration="12588000" />
+      <workItem from="1554216948277" duration="8280000" />
+      <workItem from="1554253648478" duration="268000" />
+      <workItem from="1554290852863" duration="597000" />
+      <workItem from="1554302425427" duration="2089000" />
+      <workItem from="1554388135846" duration="599000" />
+      <workItem from="1554497892795" duration="685000" />
+      <workItem from="1554732437025" duration="599000" />
+      <workItem from="1554735160004" duration="1325000" />
+      <workItem from="1554809958775" duration="1232000" />
+      <workItem from="1554907006776" duration="598000" />
+      <workItem from="1554992337523" duration="19010000" />
+      <workItem from="1555078247440" duration="23049000" />
+      <workItem from="1555157139504" duration="2682000" />
+      <workItem from="1555340105125" duration="576000" />
+      <workItem from="1555350308314" duration="599000" />
+      <workItem from="1555510946229" duration="5046000" />
+      <workItem from="1555589799245" duration="590000" />
+      <workItem from="1555898939933" duration="584000" />
+      <workItem from="1555942000337" duration="5729000" />
+      <workItem from="1556030902059" duration="2442000" />
+      <workItem from="1556113479933" duration="6108000" />
+      <workItem from="1556201282844" duration="4693000" />
+      <workItem from="1556210331837" duration="3441000" />
+      <workItem from="1556286847386" duration="1862000" />
+      <workItem from="1556546486761" duration="5588000" />
+      <workItem from="1556636213028" duration="8501000" />
+      <workItem from="1556716057340" duration="690000" />
+      <workItem from="1556804543067" duration="6433000" />
+      <workItem from="1556896157257" duration="6147000" />
+      <workItem from="1556906853316" duration="1400000" />
+      <workItem from="1556912338909" duration="2488000" />
+      <workItem from="1557240993691" duration="2395000" />
+      <workItem from="1557323171502" duration="1196000" />
+      <workItem from="1557410737738" duration="15512000" />
+      <workItem from="1557500979651" duration="7535000" />
+      <workItem from="1557761331578" duration="13198000" />
+      <workItem from="1557839170487" duration="1373000" />
+      <workItem from="1557869952449" duration="572000" />
+      <workItem from="1557933527999" duration="586000" />
+      <workItem from="1558097751586" duration="581000" />
+      <workItem from="1558120437757" duration="594000" />
+      <workItem from="1558364069611" duration="2029000" />
+      <workItem from="1558451331095" duration="591000" />
+      <workItem from="1558537455359" duration="3028000" />
+      <workItem from="1558554977269" duration="2264000" />
+      <workItem from="1558619709708" duration="2532000" />
+      <workItem from="1558710642221" duration="2738000" />
+      <workItem from="1558954695873" duration="596000" />
+      <workItem from="1559010366745" duration="720000" />
+      <workItem from="1559050883843" duration="1307000" />
+      <workItem from="1559136300886" duration="593000" />
+      <workItem from="1559161614177" duration="4030000" />
+      <workItem from="1559227295016" duration="1506000" />
+      <workItem from="1559314221813" duration="1876000" />
+      <workItem from="1559332737201" duration="589000" />
+      <workItem from="1559386047692" duration="595000" />
+      <workItem from="1559483544953" duration="552000" />
+      <workItem from="1559663366859" duration="2772000" />
+      <workItem from="1559703357547" duration="594000" />
+      <workItem from="1559746611780" duration="573000" />
+      <workItem from="1559815761023" duration="1189000" />
+      <workItem from="1559859683842" duration="571000" />
+      <workItem from="1559915423118" duration="1255000" />
+      <workItem from="1559995695656" duration="598000" />
+      <workItem from="1560175767533" duration="578000" />
+      <workItem from="1560287662137" duration="595000" />
+      <workItem from="1560377919156" duration="583000" />
+      <workItem from="1560522389270" duration="1125000" />
+      <workItem from="1560869158385" duration="584000" />
+      <workItem from="1560969291218" duration="7819000" />
+      <workItem from="1561042741364" duration="4049000" />
+      <workItem from="1561048937155" duration="2140000" />
+      <workItem from="1561117079027" duration="592000" />
+      <workItem from="1561127113433" duration="595000" />
+      <workItem from="1561145750520" duration="2331000" />
+      <workItem from="1561389884239" duration="6174000" />
+      <workItem from="1561472548875" duration="596000" />
+      <workItem from="1561560928264" duration="447000" />
+      <workItem from="1561740832345" duration="5904000" />
+      <workItem from="1562597797729" duration="662000" />
+      <workItem from="1563457270227" duration="5924000" />
+      <workItem from="1563833201030" duration="622000" />
+      <workItem from="1563893014138" duration="1645000" />
+      <workItem from="1563902699805" duration="1352000" />
+      <workItem from="1563988052538" duration="2651000" />
+      <workItem from="1564021527576" duration="602000" />
+      <workItem from="1564056455560" duration="5267000" />
+      <workItem from="1564150950156" duration="596000" />
+      <workItem from="1564279229044" duration="60000" />
+      <workItem from="1564687277405" duration="1083000" />
+      <workItem from="1564688830591" duration="957000" />
+      <workItem from="1564751463976" duration="1052000" />
+      <workItem from="1564772332559" duration="4054000" />
+      <workItem from="1564996624069" duration="496000" />
+      <workItem from="1565011452963" duration="1233000" />
+      <workItem from="1565092498871" duration="4071000" />
+      <workItem from="1565108166507" duration="1504000" />
+      <workItem from="1565279248946" duration="4713000" />
+      <workItem from="1565360678916" duration="4669000" />
+      <workItem from="1565436279486" duration="3387000" />
+      <workItem from="1565620920426" duration="1883000" />
+      <workItem from="1565696499321" duration="3119000" />
+      <workItem from="1565730150155" duration="4575000" />
+      <workItem from="1565793128654" duration="1199000" />
+      <workItem from="1565879244924" duration="5659000" />
+      <workItem from="1565955764402" duration="599000" />
+      <workItem from="1565965472717" duration="1797000" />
+      <workItem from="1566081523475" duration="260000" />
+      <workItem from="1566222701013" duration="596000" />
+      <workItem from="1566318793187" duration="597000" />
+      <workItem from="1566400743019" duration="11823000" />
+      <workItem from="1566484492419" duration="597000" />
+      <workItem from="1566573524021" duration="598000" />
+      <workItem from="1566830051592" duration="1211000" />
+      <workItem from="1566917544105" duration="595000" />
+      <workItem from="1567007900545" duration="10562000" />
+      <workItem from="1567169474797" duration="269000" />
+      <workItem from="1567274358050" duration="1170000" />
+      <workItem from="1567430837053" duration="1200000" />
+      <workItem from="1567522345584" duration="1196000" />
+      <workItem from="1567626263811" duration="599000" />
+      <workItem from="1567696663897" duration="1319000" />
+      <workItem from="1567775161250" duration="1831000" />
+      <workItem from="1568067452178" duration="599000" />
+      <workItem from="1568143956241" duration="591000" />
+      <workItem from="1568152199419" duration="633000" />
+      <workItem from="1568207775003" duration="601000" />
+      <workItem from="1568286530776" duration="598000" />
+      <workItem from="1568294895979" duration="1217000" />
+      <workItem from="1568385315367" duration="1196000" />
+      <workItem from="1568643172184" duration="1197000" />
+      <workItem from="1568730889612" duration="1857000" />
+      <workItem from="1568835838722" duration="1381000" />
+      <workItem from="1568902630977" duration="2017000" />
+      <workItem from="1568987474239" duration="599000" />
+      <workItem from="1569340813737" duration="2548000" />
+      <workItem from="1569441451741" duration="1198000" />
+      <workItem from="1569535025823" duration="597000" />
+      <workItem from="1569594421856" duration="676000" />
+      <workItem from="1570797524955" duration="3748000" />
+      <workItem from="1570891309331" duration="533000" />
+      <workItem from="1570904760169" duration="593000" />
+      <workItem from="1571057177328" duration="596000" />
+      <workItem from="1571146856522" duration="87000" />
+      <workItem from="1571667230563" duration="20789000" />
+      <workItem from="1571753362293" duration="22816000" />
+      <workItem from="1571838568746" duration="7460000" />
+      <workItem from="1571926190126" duration="14459000" />
+      <workItem from="1572012687236" duration="48000" />
+      <workItem from="1572015327812" duration="12823000" />
+      <workItem from="1572286993863" duration="12106000" />
+      <workItem from="1572359044237" duration="15260000" />
+      <workItem from="1572440921928" duration="5720000" />
+      <workItem from="1572530778114" duration="585000" />
+      <workItem from="1572700796287" duration="1202000" />
+      <workItem from="1572879199974" duration="597000" />
+      <workItem from="1572973772349" duration="11500000" />
+      <workItem from="1573050583570" duration="17619000" />
+      <workItem from="1573134771988" duration="23361000" />
+      <workItem from="1573220130443" duration="17635000" />
+      <workItem from="1573475687517" duration="592000" />
+      <workItem from="1573489476111" duration="11137000" />
+      <workItem from="1573565929544" duration="7578000" />
+      <workItem from="1573645800240" duration="23826000" />
+      <workItem from="1573739881656" duration="9396000" />
+      <workItem from="1573827762596" duration="10104000" />
+      <workItem from="1573847244334" duration="9010000" />
+      <workItem from="1574085855114" duration="253000" />
+      <workItem from="1574086176160" duration="26466000" />
+      <workItem from="1574173361353" duration="8652000" />
+      <workItem from="1574259884608" duration="9434000" />
+      <workItem from="1574272128869" duration="17502000" />
+      <workItem from="1574345443993" duration="23990000" />
+      <workItem from="1575328515743" duration="2306000" />
+      <workItem from="1575381339898" duration="18810000" />
+      <workItem from="1575468237316" duration="18137000" />
+      <workItem from="1575554875465" duration="96000" />
     </task>
     <task id="LOCAL-00001" summary="Version 3.6">
       <created>1511798359554</created>
@@ -506,73 +749,15 @@
       <option name="project" value="LOCAL" />
       <updated>1550807555583</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Version 5.87&#10;fondos multiples">
+      <created>1550808048180</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1550808048180</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
-  </component>
-  <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="42482000" />
-  </component>
-  <component name="TodoView">
-    <todo-panel id="selected-file">
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
-    <todo-panel id="all">
-      <are-packages-shown value="true" />
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
-  </component>
-  <component name="ToolWindowManager">
-    <frame x="43" y="27" width="1877" height="1053" extended-state="6" />
-    <editor active="true" />
-    <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.26215184" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.2799552" />
-      <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32725322" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49317312" visible="true" weight="0.2572973" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.4909091" weight="0.29366812" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.32964602" />
-      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5090909" side_tool="true" weight="0.44623655" />
-      <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Python Console" order="9" weight="0.22619048" />
-      <window_info anchor="bottom" id="Terminal" order="10" weight="0.32683983" />
-      <window_info anchor="bottom" id="Version Control" order="11" weight="0.3275488" />
-      <window_info anchor="bottom" id="Docker" order="12" show_stripe_button="false" />
-      <window_info anchor="bottom" id="SonarQube" order="13" weight="0.32900432" />
-      <window_info anchor="bottom" id="SonarLint" order="14" weight="0.32829374" />
-      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="SciView" order="3" />
-      <window_info anchor="right" id="Database" order="4" />
-      <window_info anchor="right" id="Data View" order="5" />
-    </layout>
-    <layout-to-restore>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.3449048" />
-      <window_info id="Structure" order="1" weight="0.2799552" />
-      <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32725322" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.3474026" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.4909091" weight="0.29501083" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.32964602" />
-      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5090909" side_tool="true" weight="0.44623655" />
-      <window_info anchor="bottom" id="Python Console" order="8" weight="0.22619048" />
-      <window_info anchor="bottom" id="Terminal" order="9" weight="0.32683983" />
-      <window_info anchor="bottom" id="Version Control" order="10" weight="0.3286334" />
-      <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
-      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="Database" order="3" />
-      <window_info anchor="right" id="SciView" order="4" />
-      <window_info anchor="right" id="Data View" order="5" />
-    </layout-to-restore>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -583,20 +768,7 @@
         <entry key="MAIN">
           <value>
             <State>
-              <option name="RECENTLY_FILTERED_USER_GROUPS">
-                <collection />
-              </option>
-              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
-                <collection />
-              </option>
-              <option name="COLUMN_ORDER">
-                <list>
-                  <option value="0" />
-                  <option value="1" />
-                  <option value="2" />
-                  <option value="3" />
-                </list>
-              </option>
+              <option name="COLUMN_ORDER" />
             </State>
           </value>
         </entry>
@@ -632,33 +804,138 @@
     <MESSAGE value="Version 5.87&#10;fondos multiples" />
     <option name="LAST_COMMIT_MESSAGE" value="Version 5.87&#10;fondos multiples" />
   </component>
+  <component name="WindowStateProjectService">
+    <state x="1451" y="223" width="256" height="583" key="#xdebugger.evaluate" timestamp="1575474669074">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state x="1451" y="223" width="256" height="583" key="#xdebugger.evaluate/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575474669074" />
+    <state x="602" y="151" width="766" height="823" key="CommitChangelistDialog2" timestamp="1575555023983">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state x="2492" y="127" width="766" height="823" key="CommitChangelistDialog2/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575328712600" />
+    <state x="602" y="151" key="CommitChangelistDialog2/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575555023983" />
+    <state width="1835" height="192" key="GridCell.Tab.0.bottom" timestamp="1575501647176">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state width="1878" height="327" key="GridCell.Tab.0.bottom/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575330148335" />
+    <state width="1835" height="192" key="GridCell.Tab.0.bottom/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575501647176" />
+    <state width="1835" height="192" key="GridCell.Tab.0.center" timestamp="1575501647176">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state width="1878" height="327" key="GridCell.Tab.0.center/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575330148335" />
+    <state width="1835" height="192" key="GridCell.Tab.0.center/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575501647176" />
+    <state width="1835" height="192" key="GridCell.Tab.0.left" timestamp="1575501647176">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state width="1878" height="327" key="GridCell.Tab.0.left/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575330148335" />
+    <state width="1835" height="192" key="GridCell.Tab.0.left/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575501647176" />
+    <state width="1835" height="192" key="GridCell.Tab.0.right" timestamp="1575501647176">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state width="1878" height="327" key="GridCell.Tab.0.right/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575330148335" />
+    <state width="1835" height="192" key="GridCell.Tab.0.right/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575501647176" />
+    <state width="1835" height="195" key="GridCell.Tab.1.bottom" timestamp="1575483751744">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state width="1835" height="195" key="GridCell.Tab.1.bottom/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575483751744" />
+    <state width="1835" height="195" key="GridCell.Tab.1.center" timestamp="1575483751744">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state width="1835" height="195" key="GridCell.Tab.1.center/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575483751744" />
+    <state width="1835" height="195" key="GridCell.Tab.1.left" timestamp="1575483751744">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state width="1835" height="195" key="GridCell.Tab.1.left/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575483751744" />
+    <state width="1835" height="195" key="GridCell.Tab.1.right" timestamp="1575483751744">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state width="1835" height="195" key="GridCell.Tab.1.right/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575483751744" />
+    <state x="2680" y="459" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1575328714867">
+      <screen x="1920" y="0" width="1920" height="1080" />
+    </state>
+    <state x="2680" y="459" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575328714867" />
+    <state x="672" y="307" width="634" height="504" key="find.popup" timestamp="1575474078410">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state x="2563" y="287" width="634" height="504" key="find.popup/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575330223829" />
+    <state x="672" y="307" width="634" height="504" key="find.popup/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575474078410" />
+    <state x="644" y="257" width="672" height="678" key="search.everywhere.popup" timestamp="1575477036996">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state x="644" y="257" width="672" height="678" key="search.everywhere.popup/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575477036996" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/Modulos.py</url>
-          <line>7371</line>
+          <line>7604</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Modulos.py</url>
-          <line>3311</line>
+          <line>3417</line>
           <option name="timeStamp" value="67" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Widgets.py</url>
-          <line>1591</line>
+          <line>1745</line>
           <option name="timeStamp" value="78" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Widgets.py</url>
-          <line>1642</line>
+          <line>1796</line>
           <option name="timeStamp" value="79" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Modulos.py</url>
-          <line>9688</line>
+          <line>5314</line>
           <option name="timeStamp" value="80" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Modulos.py</url>
+          <line>5748</line>
+          <option name="timeStamp" value="81" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Modulos.py</url>
+          <line>9268</line>
+          <option name="timeStamp" value="84" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Modulos.py</url>
+          <line>9187</line>
+          <option name="timeStamp" value="85" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Modulos.py</url>
+          <line>9355</line>
+          <option name="timeStamp" value="88" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Modulos.py</url>
+          <line>2046</line>
+          <option name="timeStamp" value="137" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Principal.py</url>
+          <line>89</line>
+          <option name="timeStamp" value="194" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Modulos.py</url>
+          <line>10001</line>
+          <option name="timeStamp" value="195" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Salidas.py</url>
+          <line>468</line>
+          <option name="timeStamp" value="198" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Cobranza.py</url>
+          <line>324</line>
+          <option name="timeStamp" value="207" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -669,117 +946,22 @@
         </breakpoint>
       </default-breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="self.server" language="Python" />
+        <watch expression="appengine" language="Python" />
+        <watch expression="self.headers" language="Python" />
+      </configuration>
+    </watches-manager>
   </component>
-  <component name="debuggerHistoryManager">
-    <expressions id="evaluateExpression">
-      <expression>
-        <expression-string>self.model[path][2]</expression-string>
-        <language-id>Python</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>self.model[path]</expression-string>
-        <language-id>Python</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-    </expressions>
-  </component>
-  <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/Principal.py.save">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="226">
-          <caret line="590" column="8" selection-start-line="590" selection-start-column="8" selection-end-line="590" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/dependencies.sh">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="128">
-          <caret line="8" column="24" selection-start-line="8" selection-start-column="24" selection-end-line="8" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/outs/config">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file:///usr/lib/python2.7/webbrowser.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="17" column="64" selection-start-line="17" selection-start-column="64" selection-end-line="17" selection-end-column="64" />
-          <folding>
-            <element signature="e#123#132#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Chrome.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3120">
-          <caret line="197" column="16" selection-start-line="197" selection-start-column="8" selection-end-line="197" selection-end-column="16" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Widgets.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9248">
-          <caret line="578" column="8" selection-start-line="578" selection-start-column="8" selection-end-line="578" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Sonido.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="752">
-          <caret line="50" column="21" selection-start-line="50" selection-start-column="21" selection-end-line="50" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/lib/python2.7/decimal.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="61920">
-          <caret line="3871" selection-start-line="3871" selection-end-line="3871" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Salidas.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="585">
-          <caret line="243" column="25" selection-start-line="243" selection-start-column="25" selection-end-line="243" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Impresion.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-544">
-          <caret line="750" column="26" lean-forward="true" selection-start-line="750" selection-start-column="26" selection-end-line="750" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Modulos.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="208">
-          <caret line="9753" column="37" lean-forward="true" selection-start-line="9753" selection-start-column="37" selection-end-line="9753" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Principal.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="256">
-          <caret line="31" column="13" selection-start-line="31" selection-start-column="13" selection-end-line="31" selection-end-column="13" />
-          <folding>
-            <element signature="e#45#55#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/outs/root.dll">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="10" selection-start-column="10" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Despacho$Principal.coverage" NAME="Principal Coverage Results" MODIFIED="1572454660868" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Despacho$CajaCentralizada.coverage" NAME="CajaCentralizada Coverage Results" MODIFIED="1571698980741" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Despacho$Chrome.coverage" NAME="Chrome Coverage Results" MODIFIED="1556121207336" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Despacho6$Cobranza.coverage" NAME="Cobranza Coverage Results" MODIFIED="1575482818278" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Despacho$Widgets.coverage" NAME="Widgets Coverage Results" MODIFIED="1557785312739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Despacho6$Principal.coverage" NAME="Principal Coverage Results" MODIFIED="1575501647160" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Despacho$Modulos.coverage" NAME="Modulos Coverage Results" MODIFIED="1555112206649" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Despacho$Cobranza.coverage" NAME="Cobranza Coverage Results" MODIFIED="1557785006451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
