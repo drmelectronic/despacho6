@@ -2575,16 +2575,16 @@ class Reloj(gtk.HBox):
                 self.horas.remove((h, p))
         if self.limite < t:
             if self.estado != 'ERROR':
-                self.eventBox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FF0044'))
+                self.eventBox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#D50D00'))
                 self.color = '#FFFFFF'
                 self.estado = 'ERROR'
         elif self.limite - self.espacio < t:
             if self.estado != 'CERCA':
-                self.eventBox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FFFF44'))
+                self.eventBox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#fccf03'))
                 self.color = '#000000'
                 self.estado = 'CERCA'
         elif self.estado != 'NORMAL':
-            self.eventBox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#BBBBBB'))
+            self.eventBox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#d5d7de'))
             self.color = '#0188d1'
             self.estado = 'NORMAL'
 

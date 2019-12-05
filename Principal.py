@@ -96,5 +96,6 @@ if __name__ == '__main__':
         gtk.main()
     except BaseException:
         s.a.http.reloj.cerrar()
+        # gtk.main_quit()
     if os.name == 'nt':
         os.system('taskkill /im TCONTUR5.exe /f')

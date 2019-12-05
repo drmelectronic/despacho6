@@ -59,4 +59,3 @@ target/
 #Personalizado
 *.iss
 mtc.py
-setup.py

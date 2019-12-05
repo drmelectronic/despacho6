@@ -15,7 +15,10 @@ class DataLocal(object):
     dataDump = {}
     username = None
     password = None
+    server = None
     sin_dns = None
+    empresa = None
+    empresa_id = None
     config_data = None
     EMPRESAS = [
         {
@@ -34,7 +37,8 @@ class DataLocal(object):
     def get_empresas(self):
         lista = []
         for e in self.EMPRESAS:
-            lista.append((e['codigo'], e['id']))
+            lista.append([e['codigo'], e['id']])
+        print('empresas', lista)
         return lista
 
     def set_empresa(self, i):
@@ -42,8 +46,8 @@ class DataLocal(object):
             if e['id'] == i:
                 self.server = e['server']
                 self.sin_dns = e['sin_dns']
-                self.empresa_id = e['empresa_id']
-                self.empresa = e['empresa']
+                self.empresa_id = e['id']
+                self.empresa = e['codigo']
                 break
 
     def load_config(self):
@@ -72,7 +76,7 @@ class DataLocal(object):
             d = json.loads(js)
             self.username = d[u'username']
             self.password = d[u'password']
-            self.empresa = d[u'empresa']
+            self.set_empresa(d[u'empresa'])
         except:
             js = json.dumps({
                 'username': '',
@@ -90,7 +94,7 @@ class DataLocal(object):
 
     def set_main(self, username, password, usuario):
         empresa = usuario.get_empresa()
-        if self.empresa and empresa is None:
+        if self.empresa is None and empresa is None:
             js = json.dumps({
                 'username': username,
                 'password': password,

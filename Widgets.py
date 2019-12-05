@@ -2417,14 +2417,16 @@ class Login(gtk.Dialog):
         self.password.set_text(self.http.dataLocal.password)
         if self.http.dataLocal.empresa:
             self.combo.hide()
+            self.combo.set_id(self.http.dataLocal.empresa)
             self.set_default_size(200, 50)
 
     def comprobar(self, *args):
         self.clave._focus_out_event(None, None)
+        self.emp = self.combo.get_id()
         self.user = self.username.get_text()
         self.pw = self.password.get_text()
         self.cl = self.clave.get_text()
-        login = self.http.login(self.user, self.pw, self.cl)
+        login = self.http.login(self.emp, self.user, self.pw, self.cl)
         if login:
             self.http.set_usuario(models.Usuario(login))
             self.but_ok.clicked()

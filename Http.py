@@ -51,32 +51,37 @@ class Http(object):
         return Http.__instance
 
     def test_server(self):
-        test = urllib3.HTTPSConnectionPool(self.dataLocal.server)
-        try:
-            test.urlopen('HEAD', '/', assert_same_host=False)
-        except:
-            print('TEST SERVER OK', self.dataLocal.server)
-            self.server = self.dataLocal.server
-        else:
-            print('TEST SERVER FAIL', self.dataLocal.server, 'USE', self.dataLocal.sin_dns)
-            self.server = self.dataLocal.sin_dns
+        if self.dataLocal.server:
+            test = urllib3.HTTPSConnectionPool(self.dataLocal.server)
+            try:
+                test.urlopen('HEAD', '/', assert_same_host=False)
+            except:
+                print('TEST SERVER OK', self.dataLocal.server)
+                self.server = self.dataLocal.server
+            else:
+                print('TEST SERVER FAIL', self.dataLocal.server, 'USE', self.dataLocal.sin_dns)
+                self.server = self.dataLocal.sin_dns
 
     def construir(self, ventanas):
+        self.ventanas = ventanas
+        self.sonido = Sonido.Hilo()
+        self.sonido.start()
+        self.reloj = Reloj.Reloj()
         self.dataLocal = DataLocal.DataLocal()
+
+    def conectar(self, empresa):
         if os.name == 'nt':
             self.local = 0
         print 'LOCAL', self.local
         if self.local:
             self.conn = urllib3.HTTPConnectionPool(self.server, timeout=30)
         else:
-            self.server = 'api.tcontur.com'
-            self.sin_dns = 'api.tcontur.com'
+            self.dataLocal.set_empresa(empresa)
+            self.server = self.dataLocal.server
+            self.sin_dns = self.dataLocal.sin_dns
             self.titulo = 'Sistema de Despacho TCONTUR v%s' % self.version
             self.test_server()
             self.conn = urllib3.HTTPSConnectionPool(self.server, timeout=30)
-        self.sonido = Sonido.Hilo()
-        self.sonido.start()
-        self.reloj = Reloj.Reloj()
         ticketera_data = self.dataLocal.get_config('ticketera')
         if ticketera_data:
             self.ticketera = Impresion.ESCPOS(ticketera_data)
@@ -99,7 +104,9 @@ class Http(object):
         self.usuario = usuario
         self.dataLocal.set_main(self.username, self.password, usuario)
 
-    def login(self, username, password, clave):
+    def login(self, empresa, username, password, clave):
+        if self.dataLocal.server is None:
+            self.conectar(empresa)
         self.username = username
         self.password = password
         data = {

@@ -1,178 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="aa5c3d0d-091e-4287-80e4-6b134f8d8211" name="Default" comment="Version 5.87&#10;fondos multiples">
-      <change afterPath="$PROJECT_DIR$/CajaCentralizada.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cobranza.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/DataLocal.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Http.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Reloj.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/theme/adwaita.rc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/webbrowser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+    <list default="true" id="aa5c3d0d-091e-4287-80e4-6b134f8d8211" name="Default" comment="Version 6.00&#10;DESPACHO &amp;">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Chrome.py" beforeDir="false" afterPath="$PROJECT_DIR$/Chrome.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Impresion.py" beforeDir="false" afterPath="$PROJECT_DIR$/Impresion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DataLocal.py" beforeDir="false" afterPath="$PROJECT_DIR$/DataLocal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Http.py" beforeDir="false" afterPath="$PROJECT_DIR$/Http.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Modulos.py" beforeDir="false" afterPath="$PROJECT_DIR$/Modulos.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Output/TCONTUR160526update.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Output/TCONTUR160527update.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Output/TCONTUR160715update.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Output/TCONTUR160908.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Output/TCONTUR170111.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Output/TCONTUR170111update.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Output/TCONTUR170727update.exe" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Principal.py" beforeDir="false" afterPath="$PROJECT_DIR$/Principal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Principal.py.save" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Salidas.py" beforeDir="false" afterPath="$PROJECT_DIR$/Salidas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Sonido.py" beforeDir="false" afterPath="$PROJECT_DIR$/Sonido.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Widgets.py" beforeDir="false" afterPath="$PROJECT_DIR$/Widgets.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/edit.png" beforeDir="false" afterPath="$PROJECT_DIR$/edit.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/escpos/escpos.py" beforeDir="false" afterPath="$PROJECT_DIR$/escpos/escpos.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/abajo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/abajo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/actualizar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/actualizar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/bloqueado.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/buscar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/buscar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/buscar_personal.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/buscar_personal.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/castigado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/castigado.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/conectado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/conectado.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/desconectado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/desconectado.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/fondo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/fondo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/grifo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/grifo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/guardar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/guardar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/imprimir.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/imprimir.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/no_bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/no_bloqueado.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/no_castigado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/no_castigado.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/relojes.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/relojes.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-16/warning.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-16/warning.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/abajo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/abajo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/aceptar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/aceptar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/actualizar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/actualizar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/anular.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/anular.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/arriba.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/arriba.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/atras.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/atras.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/bloqueado.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/buscar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/buscar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/caja.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/caja.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/calendario.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/calendario.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/cancelar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/cancelar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/castigos.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/castigos.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/central.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/central.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/chrome.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/chrome.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/confirmar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/confirmar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/credito.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/credito.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/cuenta.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/cuenta.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/derecha.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/derecha.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/despachar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/despachar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/deudas.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/deudas.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/dinero.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/dinero.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/editar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/editar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/error.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/error.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/excel.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/excel.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/excluir.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/excluir.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/flota.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/flota.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/fondo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/fondo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/fondo_multiple.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/fondo_multiple.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/grifo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/grifo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/guardar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/guardar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/imprimir.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/imprimir.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/izquierda.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/izquierda.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/liquidar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/liquidar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/llamar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/llamar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/mantenimiento.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/mantenimiento.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/no_bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/no_bloqueado.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/nuevo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/nuevo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/odometro.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/odometro.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/personal.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/personal.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/relojes.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/relojes.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/reporte.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/reporte.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/salir.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/salir.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/servicio.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/servicio.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/siguiente.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/siguiente.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/stock_rojo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/stock_rojo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/stock_verde.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/stock_verde.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/stop.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/stop.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/transbordo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/transbordo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-24/video.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-24/video.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/SMS.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/abajo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/abajo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/actualizar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/actualizar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/anular.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/anular.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/arriba.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/arriba.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/bateria.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/bateria.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/bloqueado.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/buscar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/buscar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/caja.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/caja.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/caja_central.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/caja_central.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/calendario.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/calendario.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/cambiar_hora.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/cambiar_hora.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/cambiar_padron.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/cambiar_padron.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/cambiar_volada.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/cambiar_volada.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/castigos.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/castigos.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/chrome.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/chrome.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/corteruta.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/corteruta.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/credito.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/credito.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/cuenta.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/cuenta.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/cuidado_hora.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/cuidado_hora.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/dar_prioridad.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/dar_prioridad.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/dinero.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/dinero.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/editar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/editar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/eliminar_tarjeta.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/eliminar_tarjeta.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/error.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/error.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/error_dialogo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/error_dialogo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/error_numero.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/error_numero.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/escape.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/escape.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/falta_escoger.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/falta_escoger.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/fin_de_ruta.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/fin_de_ruta.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/fondo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/fondo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/grifo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/grifo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/imprimir.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/imprimir.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/info.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/info.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/internet.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/internet.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/lista_transacciones.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/lista_transacciones.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/llamada.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/llamada.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/login.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/login.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/no_bloqueado.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/no_bloqueado.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/panico.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/panico.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/personal.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/personal.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/quitar_prioridad.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/quitar_prioridad.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/recibo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/recibo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/recibo_monedas.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/recibo_monedas.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/regresar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/regresar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/servicio.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/servicio.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/singps.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/singps.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/sonido.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/sonido.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/terminal_recibo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/terminal_recibo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/texto.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/texto.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/transbordo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/transbordo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/PNG-48/warning.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/PNG-48/warning.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/toolbar/actualizar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/actualizar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/toolbar/buscar.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/buscar.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/toolbar/caja_central.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/caja_central.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/toolbar/chrome.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/chrome.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/toolbar/dinero.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/dinero.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/toolbar/flota.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/flota.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/toolbar/grifo.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/grifo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/toolbar/login.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/login.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/toolbar/mantenimiento.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/mantenimiento.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/toolbar/salidas.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/toolbar/salidas.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outs/config" beforeDir="false" afterPath="$PROJECT_DIR$/outs/config" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outs/imagen.png" beforeDir="false" afterPath="$PROJECT_DIR$/outs/imagen.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outs/impresion.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/outs/impresion.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outs/impresion.txt" beforeDir="false" afterPath="$PROJECT_DIR$/outs/impresion.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/escpos/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/escpos/constants.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/escpos/escpos.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/escpos/exceptions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/escpos/printer.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/outs/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/outs/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outs/pdfcreator.dll" beforeDir="false" afterPath="$PROJECT_DIR$/outs/pdfcreator.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outs/printer" beforeDir="false" afterPath="$PROJECT_DIR$/outs/printer" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outs/reporte.xls" beforeDir="false" afterPath="$PROJECT_DIR$/outs/reporte.xls" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outs/root.dll" beforeDir="false" afterPath="$PROJECT_DIR$/outs/root.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outs/ticket.lpt" beforeDir="false" afterPath="$PROJECT_DIR$/outs/ticket.lpt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outs/ticket.lst" beforeDir="false" afterPath="$PROJECT_DIR$/outs/ticket.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outs/ticket.txt" beforeDir="false" afterPath="$PROJECT_DIR$/outs/ticket.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/usb/_debug.py" beforeDir="false" afterPath="$PROJECT_DIR$/usb/_debug.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/usb/backend/openusb.py" beforeDir="false" afterPath="$PROJECT_DIR$/usb/backend/openusb.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/usb/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/usb/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wxpython.py" beforeDir="false" afterPath="$PROJECT_DIR$/wxpython.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/parallelppdev.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/parallel/parallelwin32.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/parport/LICENSE" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/parport/README" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/parport/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/parport/src/parport.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/constants.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/exceptions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/image/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/image/base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/image/pil.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/image/pure.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/image/svg.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/tests.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qrcode/util.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/_debug.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/_interop.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/backend/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/backend/libusb0.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/backend/libusb1.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/backend/openusb.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/control.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/core.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/legacy.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/usb/util.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/biffh.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/book.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/compdoc.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/examples/namesdemo.xls" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/examples/xlrdnameAPIdemo.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/formatting.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/formula.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/info.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/sheet.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/timemachine.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/xldate.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/xlrd/xlsx.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -429,11 +314,11 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.CajaCentralizada" />
       <item itemvalue="Python.Chrome" />
       <item itemvalue="Python.Cobranza" />
       <item itemvalue="Python.Principal" />
       <item itemvalue="Python.Widgets" />
+      <item itemvalue="Python.CajaCentralizada" />
     </list>
     <recent_temporary>
       <list>
@@ -691,7 +576,8 @@
       <workItem from="1575328515743" duration="2306000" />
       <workItem from="1575381339898" duration="18810000" />
       <workItem from="1575468237316" duration="18137000" />
-      <workItem from="1575554875465" duration="96000" />
+      <workItem from="1575554875465" duration="786000" />
+      <workItem from="1575558500571" duration="2878000" />
     </task>
     <task id="LOCAL-00001" summary="Version 3.6">
       <created>1511798359554</created>
@@ -756,7 +642,14 @@
       <option name="project" value="LOCAL" />
       <updated>1550808048180</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Version 6.00&#10;DESPACHO &amp;">
+      <created>1575555067109</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1575555067109</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -802,54 +695,67 @@
     <MESSAGE value="Version 5.61" />
     <MESSAGE value="Version 5.83&#10;Sonido 100" />
     <MESSAGE value="Version 5.87&#10;fondos multiples" />
-    <option name="LAST_COMMIT_MESSAGE" value="Version 5.87&#10;fondos multiples" />
+    <MESSAGE value="Version 6.00&#10;DESPACHO &amp;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Version 6.00&#10;DESPACHO &amp;" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="1451" y="223" width="256" height="583" key="#xdebugger.evaluate" timestamp="1575474669074">
+    <state x="439" y="210" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1575558984514">
       <screen x="43" y="27" width="1877" height="1053" />
     </state>
-    <state x="1451" y="223" width="256" height="583" key="#xdebugger.evaluate/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575474669074" />
-    <state x="602" y="151" width="766" height="823" key="CommitChangelistDialog2" timestamp="1575555023983">
+    <state x="439" y="210" key="#com.intellij.execution.impl.EditConfigurationsDialog/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575558984514" />
+    <state x="1451" y="223" width="256" height="583" key="#xdebugger.evaluate" timestamp="1575560959109">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state x="1451" y="223" width="256" height="583" key="#xdebugger.evaluate/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575560959108" />
+    <state x="602" y="151" width="764" height="823" key="CommitChangelistDialog2" timestamp="1575558595281">
       <screen x="43" y="27" width="1877" height="1053" />
     </state>
     <state x="2492" y="127" width="766" height="823" key="CommitChangelistDialog2/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575328712600" />
-    <state x="602" y="151" key="CommitChangelistDialog2/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575555023983" />
-    <state width="1835" height="192" key="GridCell.Tab.0.bottom" timestamp="1575501647176">
+    <state x="602" y="151" width="764" height="823" key="CommitChangelistDialog2/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575558595281" />
+    <state width="1835" height="357" key="GridCell.Tab.0.bottom" timestamp="1575561368642">
       <screen x="43" y="27" width="1877" height="1053" />
     </state>
     <state width="1878" height="327" key="GridCell.Tab.0.bottom/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575330148335" />
-    <state width="1835" height="192" key="GridCell.Tab.0.bottom/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575501647176" />
-    <state width="1835" height="192" key="GridCell.Tab.0.center" timestamp="1575501647176">
+    <state width="1835" height="357" key="GridCell.Tab.0.bottom/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575561368642" />
+    <state width="1835" height="357" key="GridCell.Tab.0.center" timestamp="1575561368642">
       <screen x="43" y="27" width="1877" height="1053" />
     </state>
     <state width="1878" height="327" key="GridCell.Tab.0.center/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575330148335" />
-    <state width="1835" height="192" key="GridCell.Tab.0.center/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575501647176" />
-    <state width="1835" height="192" key="GridCell.Tab.0.left" timestamp="1575501647176">
+    <state width="1835" height="357" key="GridCell.Tab.0.center/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575561368642" />
+    <state width="1835" height="357" key="GridCell.Tab.0.left" timestamp="1575561368642">
       <screen x="43" y="27" width="1877" height="1053" />
     </state>
     <state width="1878" height="327" key="GridCell.Tab.0.left/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575330148335" />
-    <state width="1835" height="192" key="GridCell.Tab.0.left/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575501647176" />
-    <state width="1835" height="192" key="GridCell.Tab.0.right" timestamp="1575501647176">
+    <state width="1835" height="357" key="GridCell.Tab.0.left/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575561368642" />
+    <state width="1835" height="357" key="GridCell.Tab.0.right" timestamp="1575561368642">
       <screen x="43" y="27" width="1877" height="1053" />
     </state>
     <state width="1878" height="327" key="GridCell.Tab.0.right/43.27.1877.1053/1920.0.1920.1080@1920.0.1920.1080" timestamp="1575330148335" />
-    <state width="1835" height="192" key="GridCell.Tab.0.right/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575501647176" />
-    <state width="1835" height="195" key="GridCell.Tab.1.bottom" timestamp="1575483751744">
+    <state width="1835" height="357" key="GridCell.Tab.0.right/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575561368642" />
+    <state width="1835" height="195" key="GridCell.Tab.1.bottom" timestamp="1575560962780">
       <screen x="43" y="27" width="1877" height="1053" />
     </state>
-    <state width="1835" height="195" key="GridCell.Tab.1.bottom/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575483751744" />
-    <state width="1835" height="195" key="GridCell.Tab.1.center" timestamp="1575483751744">
+    <state width="1835" height="195" key="GridCell.Tab.1.bottom/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575560962780" />
+    <state width="1835" height="195" key="GridCell.Tab.1.center" timestamp="1575560962780">
       <screen x="43" y="27" width="1877" height="1053" />
     </state>
-    <state width="1835" height="195" key="GridCell.Tab.1.center/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575483751744" />
-    <state width="1835" height="195" key="GridCell.Tab.1.left" timestamp="1575483751744">
+    <state width="1835" height="195" key="GridCell.Tab.1.center/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575560962780" />
+    <state width="1835" height="195" key="GridCell.Tab.1.left" timestamp="1575560962780">
       <screen x="43" y="27" width="1877" height="1053" />
     </state>
-    <state width="1835" height="195" key="GridCell.Tab.1.left/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575483751744" />
-    <state width="1835" height="195" key="GridCell.Tab.1.right" timestamp="1575483751744">
+    <state width="1835" height="195" key="GridCell.Tab.1.left/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575560962780" />
+    <state width="1835" height="195" key="GridCell.Tab.1.right" timestamp="1575560962780">
       <screen x="43" y="27" width="1877" height="1053" />
     </state>
-    <state width="1835" height="195" key="GridCell.Tab.1.right/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575483751744" />
+    <state width="1835" height="195" key="GridCell.Tab.1.right/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575560962780" />
+    <state x="576" y="288" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1575555069531">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state x="576" y="288" width="800" height="528" key="Vcs.Push.Dialog.v2/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575555069531" />
+    <state x="768" y="299" width="421" height="526" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog" timestamp="1575558588867">
+      <screen x="43" y="27" width="1877" height="1053" />
+    </state>
+    <state x="768" y="299" width="421" height="526" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog/43.27.1877.1053/1920.0.1920.1080@43.27.1877.1053" timestamp="1575558588867" />
     <state x="2680" y="459" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1575328714867">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
@@ -937,6 +843,31 @@
           <line>324</line>
           <option name="timeStamp" value="207" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Widgets.py</url>
+          <line>2428</line>
+          <option name="timeStamp" value="208" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Http.py</url>
+          <line>78</line>
+          <option name="timeStamp" value="209" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/DataLocal.py</url>
+          <line>78</line>
+          <option name="timeStamp" value="211" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/DataLocal.py</url>
+          <line>80</line>
+          <option name="timeStamp" value="213" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/DataLocal.py</url>
+          <line>95</line>
+          <option name="timeStamp" value="215" />
+        </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
@@ -960,7 +891,7 @@
     <SUITE FILE_PATH="coverage/Despacho$Chrome.coverage" NAME="Chrome Coverage Results" MODIFIED="1556121207336" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Despacho6$Cobranza.coverage" NAME="Cobranza Coverage Results" MODIFIED="1575482818278" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Despacho$Widgets.coverage" NAME="Widgets Coverage Results" MODIFIED="1557785312739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Despacho6$Principal.coverage" NAME="Principal Coverage Results" MODIFIED="1575501647160" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Despacho6$Principal.coverage" NAME="Principal Coverage Results" MODIFIED="1575561368606" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Despacho$Modulos.coverage" NAME="Modulos Coverage Results" MODIFIED="1555112206649" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Despacho$Cobranza.coverage" NAME="Cobranza Coverage Results" MODIFIED="1557785006451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
